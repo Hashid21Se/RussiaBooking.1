@@ -12,10 +12,14 @@ import {
   Coins, 
   Sparkles,
   Compass,
-  FileText
+  FileText,
+  User as UserIcon,
+  LogOut,
+  Building,
+  Headphones
 } from 'lucide-react';
 import { Language, translations } from '../lib/i18n';
-import { SupportedCurrency } from '../types';
+import { SupportedCurrency, User, UserRole } from '../types';
 import { CURRENCY_RATES } from '../lib/currency';
 import { PWAInstallButton } from './PWAInstallButton';
 
@@ -30,9 +34,12 @@ interface HeaderProps {
   onNavigate: (view: string) => void;
   savedCount: number;
   bookingsCount: number;
-  userRole: 'USER' | 'ADMIN';
+  userRole: UserRole;
   onToggleRole: () => void;
   loyaltyPoints?: number;
+  currentUser?: User | null;
+  onOpenAuth: () => void;
+  onLogout: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -49,12 +56,57 @@ export const Header: React.FC<HeaderProps> = ({
   userRole,
   onToggleRole,
   loyaltyPoints = 0,
+  currentUser,
+  onOpenAuth,
+  onLogout,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = React.useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = React.useState(false);
   const t = translations[lang];
 
   const currencies: SupportedCurrency[] = ['SAR', 'RUB', 'AED', 'USD', 'KWD', 'QAR'];
+
+  // Role display badges
+  const getRoleBadge = (role: UserRole) => {
+    switch (role) {
+      case 'HOTEL_PARTNER':
+        return {
+          labelAr: 'فندق شريك',
+          labelEn: 'Partner',
+          bg: 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800',
+          icon: Building
+        };
+      case 'PLATFORM_ADMIN':
+      case 'ADMIN':
+      case 'SUPER_ADMIN':
+        return {
+          labelAr: 'مشرف منصة',
+          labelEn: 'Admin',
+          bg: 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800',
+          icon: ShieldCheck
+        };
+      case 'SUPPORT_AGENT':
+        return {
+          labelAr: 'دعم فني',
+          labelEn: 'Support',
+          bg: 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800',
+          icon: Headphones
+        };
+      case 'TRAVELER':
+      case 'USER':
+      default:
+        return {
+          labelAr: 'مسافر',
+          labelEn: 'Traveler',
+          bg: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
+          icon: UserIcon
+        };
+    }
+  };
+
+  const roleInfo = getRoleBadge(currentUser?.role || userRole);
+  const RoleIcon = roleInfo.icon;
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[#E5E7EB] bg-white/95 backdrop-blur-md dark:border-slate-800 dark:bg-[#0F141C]/95 transition-colors">
@@ -269,19 +321,111 @@ export const Header: React.FC<HeaderProps> = ({
             </span>
           </button>
 
-          {/* Admin Switcher Pill */}
+          {/* Authentication & Role Pill */}
+          {currentUser ? (
+            <div className="relative">
+              <button
+                id="user-session-btn"
+                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                className={`flex items-center gap-1.5 sm:gap-2 rounded-xl border px-2.5 sm:px-3 py-1.5 text-xs font-bold transition shadow-xs ${roleInfo.bg}`}
+                title={lang === 'ar' ? 'إدارة الحساب والأدوار' : 'Account & Role Management'}
+              >
+                <RoleIcon className="w-3.5 h-3.5" />
+                <span className="hidden md:inline font-medium">
+                  {lang === 'ar' ? roleInfo.labelAr : roleInfo.labelEn}
+                </span>
+                <span className="max-w-[70px] sm:max-w-[100px] truncate text-[11px] opacity-85">
+                  {currentUser.name.split(' ')[0]}
+                </span>
+              </button>
+
+              {userDropdownOpen && (
+                <div 
+                  className="absolute right-0 mt-2 w-56 rounded-2xl border border-neutral-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2 shadow-xl z-50 text-xs"
+                  dir={lang === 'ar' ? 'rtl' : 'ltr'}
+                >
+                  <div className="px-2.5 py-2 border-b border-neutral-100 dark:border-slate-800">
+                    <p className="font-bold text-neutral-900 dark:text-white truncate">{currentUser.name}</p>
+                    <p className="text-[11px] text-neutral-500 dark:text-slate-400 truncate">{currentUser.email}</p>
+                    <span className={`inline-block mt-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${roleInfo.bg}`}>
+                      {lang === 'ar' ? roleInfo.labelAr : roleInfo.labelEn}
+                    </span>
+                  </div>
+
+                  <div className="py-1 space-y-0.5">
+                    <button
+                      onClick={() => { onNavigate('profile'); setUserDropdownOpen(false); }}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-neutral-700 dark:text-slate-300 hover:bg-neutral-100 dark:hover:bg-slate-800 transition text-start"
+                    >
+                      <UserIcon className="w-3.5 h-3.5 text-neutral-400" />
+                      <span>{lang === 'ar' ? 'الملف الشخصي والتوثيق' : 'Profile & KYC'}</span>
+                    </button>
+
+                    {(currentUser.role === 'PLATFORM_ADMIN' || currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'SUPPORT_AGENT') && (
+                      <button
+                        onClick={() => { onNavigate('admin'); setUserDropdownOpen(false); }}
+                        className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/30 transition text-start font-semibold"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>{lang === 'ar' ? 'لوحة تحكم المشرف' : 'Admin Portal'}</span>
+                      </button>
+                    )}
+
+                    {currentUser.role === 'HOTEL_PARTNER' && (
+                      <button
+                        onClick={() => { onNavigate('admin'); setUserDropdownOpen(false); }}
+                        className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition text-start font-semibold"
+                      >
+                        <Building className="w-3.5 h-3.5" />
+                        <span>{lang === 'ar' ? 'إكسترانت الفندق الشريك' : 'Partner Extranet'}</span>
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => { onOpenAuth(); setUserDropdownOpen(false); }}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition text-start"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>{lang === 'ar' ? 'تبديل الدور (RBAC Switcher)' : 'Switch Role (RBAC)'}</span>
+                    </button>
+                  </div>
+
+                  <div className="pt-1 border-t border-neutral-100 dark:border-slate-800">
+                    <button
+                      onClick={() => { onLogout(); setUserDropdownOpen(false); }}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition text-start"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>{lang === 'ar' ? 'تسجيل الخروج' : 'Sign Out'}</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button
+              id="header-login-btn"
+              onClick={onOpenAuth}
+              className="flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 text-xs font-bold transition shadow-xs"
+            >
+              <UserIcon className="w-3.5 h-3.5" />
+              <span>{lang === 'ar' ? 'تسجيل الدخول' : 'Sign In'}</span>
+            </button>
+          )}
+
+          {/* Admin Switcher Pill (Legacy / Direct toggle) */}
           <button
             id="admin-mode-btn"
             onClick={onToggleRole}
             className={`hidden md:flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition shadow-xs ${
-              userRole === 'ADMIN'
+              userRole === 'ADMIN' || userRole === 'PLATFORM_ADMIN'
                 ? 'bg-[#111827] text-white dark:bg-white dark:text-[#111827]'
                 : 'border border-[#E5E7EB] bg-white text-[#6B7280] hover:text-[#111827] hover:bg-[#F8F9FA] dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400'
             }`}
             title="Toggle Admin View"
           >
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>{userRole === 'ADMIN' ? 'Admin Mode' : 'Admin'}</span>
+            <span>{userRole === 'ADMIN' || userRole === 'PLATFORM_ADMIN' ? 'Admin Portal' : 'Admin'}</span>
           </button>
 
           {/* Mobile Menu Hamburger */}

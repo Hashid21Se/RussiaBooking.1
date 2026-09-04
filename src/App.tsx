@@ -15,9 +15,10 @@ import { MyBookingsView } from './components/MyBookingsView';
 import { SavedFavoritesView } from './components/SavedFavoritesView';
 import { AdminPortalView } from './components/AdminPortalView';
 import { UserProfileView } from './components/UserProfileView';
+import { AuthModal } from './components/AuthModal';
 import { Footer } from './components/Footer';
 import { Language, translations } from './lib/i18n';
-import { Hotel, HotelRoom, RoomRate, SearchFilters, SupportedCurrency, Booking, UserProfile } from './types';
+import { Hotel, HotelRoom, RoomRate, SearchFilters, SupportedCurrency, Booking, UserProfile, User, UserRole } from './types';
 import { SEED_HOTELS } from './server/seedData';
 import { HotelCard } from './components/HotelCard';
 import { Sparkles, Building, ArrowLeft, ArrowRight, ShieldCheck, Compass } from 'lucide-react';
@@ -143,7 +144,75 @@ export default function App() {
   const [currency, setCurrency] = useState<SupportedCurrency>('SAR');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [currentView, setCurrentView] = useState<string>('home');
-  const [userRole, setUserRole] = useState<'USER' | 'ADMIN'>('USER');
+  const [userRole, setUserRole] = useState<UserRole>('TRAVELER');
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    try {
+      const saved = localStorage.getItem('russiabooking_user');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return {
+      id: 'user-hashed-1',
+      name: 'سعد بن خالد الراجحي',
+      email: 'hashedalrajhi@gmail.com',
+      phone: '+966 50 123 4567',
+      role: 'TRAVELER',
+      kycStatus: 'VERIFIED',
+      kycDetails: {
+        passportNumber: 'N12345678',
+        fullNameLatin: 'Saad Khaled Alrajhi',
+        nationality: 'Saudi Arabia',
+        dateOfBirth: '1990-05-12',
+        expiryDate: '2030-08-20',
+        gender: 'MALE',
+        verifiedAt: '2026-01-16T12:00:00Z',
+      },
+      loyaltyTier: 'GOLD',
+      loyaltyPoints: 7048,
+      createdAt: '2026-01-15T10:00:00Z',
+      updatedAt: '2026-08-20T10:05:00Z',
+    };
+  });
+
+  const handleAuthSuccess = (user: User, token: string) => {
+    setCurrentUser(user);
+    setUserRole(user.role);
+    try {
+      localStorage.setItem('russiabooking_user', JSON.stringify(user));
+      localStorage.setItem('russiabooking_token', token);
+    } catch (e) {}
+    
+    // Update local profile view state if name/email match
+    setUserProfile((prev) => ({
+      ...prev,
+      name: user.name,
+      email: user.email,
+      phone: user.phone || prev.phone,
+      passportNumber: user.kycDetails?.passportNumber || prev.passportNumber,
+    }));
+
+    showToast(
+      lang === 'ar'
+        ? `مرحباً ${user.name} (${user.role})`
+        : `Welcome back, ${user.name} (${user.role})`
+    );
+
+    // If partner or admin, route them naturally to their extranet/admin portal
+    if (user.role === 'HOTEL_PARTNER' || user.role === 'PLATFORM_ADMIN' || user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+      setCurrentView('admin');
+    }
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setUserRole('TRAVELER');
+    try {
+      localStorage.removeItem('russiabooking_user');
+      localStorage.removeItem('russiabooking_token');
+    } catch (e) {}
+    showToast(lang === 'ar' ? 'تم تسجيل الخروج بنجاح' : 'Signed out successfully');
+  };
 
   // Inventory & Search States
   const [hotels, setHotels] = useState<Hotel[]>(SEED_HOTELS);
@@ -508,13 +577,16 @@ export default function App() {
         savedCount={favorites.length}
         bookingsCount={bookings.filter((b) => b.status === 'CONFIRMED').length}
         loyaltyPoints={userProfile.totalPoints ?? userProfile.loyaltyPoints ?? 0}
-        userRole={userRole}
+        userRole={currentUser?.role || userRole}
         onToggleRole={() => {
-          const nextRole = userRole === 'USER' ? 'ADMIN' : 'USER';
+          const nextRole: UserRole = (currentUser?.role === 'PLATFORM_ADMIN' || userRole === 'PLATFORM_ADMIN') ? 'TRAVELER' : 'PLATFORM_ADMIN';
           setUserRole(nextRole);
-          if (nextRole === 'ADMIN') handleNavigate('admin');
+          if (nextRole === 'PLATFORM_ADMIN') handleNavigate('admin');
           else handleNavigate('home');
         }}
+        currentUser={currentUser}
+        onOpenAuth={() => setIsAuthModalOpen(true)}
+        onLogout={handleLogout}
       />
 
       {/* Main Content Render Area */}
@@ -710,6 +782,14 @@ export default function App() {
         lang={lang}
         onNavigate={handleNavigate}
         onSelectCity={handleSelectCity}
+      />
+
+      {/* Unified Security & Auth Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        lang={lang}
+        onAuthSuccess={handleAuthSuccess}
       />
     </div>
   );

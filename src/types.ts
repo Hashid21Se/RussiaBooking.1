@@ -3,7 +3,31 @@
  * Production-ready schema definitions for hotel booking platform
  */
 
-export type UserRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN';
+export type UserRole = 
+  | 'TRAVELER' 
+  | 'HOTEL_PARTNER' 
+  | 'PLATFORM_ADMIN' 
+  | 'SUPPORT_AGENT' 
+  | 'USER' 
+  | 'ADMIN' 
+  | 'SUPER_ADMIN';
+
+export type KYCStatus = 'NOT_SUBMITTED' | 'PENDING_REVIEW' | 'VERIFIED' | 'REJECTED';
+
+export interface PassportKYC {
+  passportNumber: string;
+  fullNameLatin: string;
+  fullNameArabic?: string;
+  nationality: string;
+  dateOfBirth: string;
+  expiryDate: string;
+  gender: 'MALE' | 'FEMALE';
+  status: KYCStatus;
+  submittedAt?: string;
+  verifiedAt?: string;
+  rejectionReason?: string;
+  documentScanUrl?: string;
+}
 
 export interface User {
   id: string;
@@ -12,8 +36,26 @@ export interface User {
   phone?: string;
   country?: string;
   role: UserRole;
+  hotelId?: string; // If role is HOTEL_PARTNER, associated hotel ID
+  kyc?: PassportKYC;
+  kycDetails?: PassportKYC;
+  kycStatus?: KYCStatus;
+  loyaltyTier?: string;
+  loyaltyPoints?: number;
+  isPhoneVerified?: boolean;
+  isEmailVerified?: boolean;
+  avatarUrl?: string;
   createdAt: string;
+  updatedAt?: string;
 }
+
+export interface AuthSession {
+  user: User;
+  accessToken: string;
+  refreshToken?: string;
+  expiresIn: number;
+}
+
 
 export type SupportedCurrency = 'RUB' | 'SAR' | 'AED' | 'USD' | 'KWD' | 'QAR';
 

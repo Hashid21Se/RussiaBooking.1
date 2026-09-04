@@ -66,6 +66,14 @@ export const CURRENCY_RATES: Record<SupportedCurrency, CurrencyRate> = {
 
 export class CurrencyService {
   /**
+   * Get exchange rate from RUB to target currency
+   */
+  static getRate(currency: SupportedCurrency): number {
+    const rateInfo = CURRENCY_RATES[currency];
+    return rateInfo ? rateInfo.rateFromRub : 1.0;
+  }
+
+  /**
    * Convert RUB base amount to target currency
    */
   static convertFromRub(rubAmount: number, target: SupportedCurrency): number {
