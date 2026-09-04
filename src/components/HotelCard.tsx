@@ -55,6 +55,9 @@ export const HotelCard: React.FC<HotelCardProps> = ({
           alt={lang === 'ar' ? hotel.nameAr : hotel.nameEn}
           className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
+          decoding="async"
+          width="800"
+          height="500"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent sm:hidden"></div>
 
@@ -113,7 +116,7 @@ export const HotelCard: React.FC<HotelCardProps> = ({
         </div>
 
         {/* E-Visa Support Tag */}
-        <div className="absolute bottom-3 start-3 rounded-lg bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-2.5 py-1 text-[10px] font-semibold text-[#10B981] border border-gray-100 dark:border-slate-800 flex items-center gap-1 shadow-xs">
+        <div className="absolute bottom-3 start-3 rounded-lg bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-2.5 py-1 text-[10px] font-semibold text-[#10B981] border border-gray-100 dark:border-slate-700/60 flex items-center gap-2">
           <ShieldCheck className="w-3 h-3 text-[#10B981]" />
           <span>{lang === 'ar' ? 'دعوة تأشيرة معتمدة' : 'Official E-Visa Voucher'}</span>
         </div>
@@ -175,25 +178,25 @@ export const HotelCard: React.FC<HotelCardProps> = ({
           {/* Amenities Badges */}
           <div className="mt-3.5 flex flex-wrap items-center gap-1.5 text-xs">
             {hotel.policies.halalCertifiedFood && (
-              <span className="inline-flex items-center gap-1 rounded-lg bg-[#F8F9FA] dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700/60 px-2.5 py-0.5 text-[11px] font-semibold text-[#111827] dark:text-slate-300">
+              <span className="inline-flex items-center gap-1 rounded-lg bg-[#F8F9FA] dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700/60 px-2.5 py-0.5 text-[11px] font-semibold text-[#111827] dark:text-slate-200">
                 <Utensils className="w-3 h-3 text-[#E11D48]" />
                 {t.hotelCard.halalAvailable}
               </span>
             )}
             {hotel.policies.freeCancellationHours > 0 && (
-              <span className="inline-flex items-center gap-1 rounded-lg bg-[#F8F9FA] dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700/60 px-2.5 py-0.5 text-[11px] font-semibold text-[#10B981] dark:text-[#10B981]">
+              <span className="inline-flex items-center gap-1 rounded-lg bg-[#F8F9FA] dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700/60 px-2.5 py-0.5 text-[11px] font-semibold text-[#111827] dark:text-slate-200">
                 <CheckCircle className="w-3 h-3 text-[#10B981]" />
                 {t.hotelCard.freeCancellation}
               </span>
             )}
             {hotel.amenities.includes('pool') && (
-              <span className="inline-flex items-center gap-1 rounded-lg bg-[#F8F9FA] dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700/60 px-2.5 py-0.5 text-[11px] font-semibold text-[#4B5563] dark:text-slate-300">
+              <span className="inline-flex items-center gap-1 rounded-lg bg-[#F8F9FA] dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700/60 px-2.5 py-0.5 text-[11px] font-semibold text-[#111827] dark:text-slate-200">
                 <Waves className="w-3 h-3 text-blue-500" />
                 {t.search.pool}
               </span>
             )}
             {hotel.amenities.includes('wifi') && (
-              <span className="inline-flex items-center gap-1 rounded-lg bg-[#F8F9FA] dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700/60 px-2.5 py-0.5 text-[11px] font-medium text-[#4B5563] dark:text-slate-300">
+              <span className="inline-flex items-center gap-1 rounded-lg bg-[#F8F9FA] dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700/60 px-2.5 py-0.5 text-[11px] font-medium text-[#111827] dark:text-slate-200">
                 <Wifi className="w-3 h-3 text-[#9CA3AF]" />
                 WiFi
               </span>
@@ -244,7 +247,7 @@ export const HotelCard: React.FC<HotelCardProps> = ({
           <button
             id={`view-rooms-btn-${hotel.id}`}
             onClick={() => onSelect(hotel)}
-            className="flex items-center gap-1.5 rounded-xl bg-[#111827] hover:bg-black text-white dark:bg-[#E11D48] dark:hover:bg-[#BE123C] px-4 py-2.5 text-xs sm:text-sm font-bold shadow-xs transition active:scale-95"
+            className="flex items-center gap-1.5 rounded-xl bg-[#111827] hover:bg-black text-white dark:bg-[#E11D48] dark:hover:bg-[#BE123C] px-4 py-2.5 text-xs sm:text-sm font-bold shadow-xs transition"
           >
             <Eye className="w-4 h-4" />
             <span>{t.hotelCard.viewDetails}</span>
