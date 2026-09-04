@@ -5,12 +5,18 @@
 
 import bcrypt from 'bcryptjs';
 import { User, UserRole, PassportKYC } from '../../types';
+import { EncryptionService } from '../security/encryptionService';
+import { TotpService } from '../security/totpService';
 
 export interface UserRecord extends User {
   passwordHash?: string;
   otpCode?: string;
   otpExpiresAt?: number;
   refreshTokenHash?: string;
+  twoFactorSecret?: string;
+  twoFactorEnabled?: boolean;
+  backupCodesHashed?: string[];
+  encryptedPassportNumber?: string;
 }
 
 export class UserRepository {
@@ -185,7 +191,52 @@ export class UserRepository {
   }
 
   public async updatePassportKYC(userId: string, kyc: PassportKYC): Promise<UserRecord | null> {
-    return this.update(userId, { kyc });
+    const encryptedPassport = EncryptionService.encrypt(kyc.passportNumber);
+    return this.update(userId, { 
+      kyc,
+      encryptedPassportNumber: encryptedPassport 
+    });
+  }
+
+  public async set2FASetup(userId: string, secret: string, backupCodes: string[]): Promise<void> {
+    const user = this.users.get(userId);
+    if (user) {
+      user.twoFactorSecret = secret;
+      user.backupCodesHashed = backupCodes.map(c => TotpService.hashBackupCode(c));
+      this.users.set(userId, user);
+    }
+  }
+
+  public async enable2FA(userId: string): Promise<boolean> {
+    const user = this.users.get(userId);
+    if (!user || !user.twoFactorSecret) return false;
+    user.twoFactorEnabled = true;
+    this.users.set(userId, user);
+    return true;
+  }
+
+  public async disable2FA(userId: string): Promise<boolean> {
+    const user = this.users.get(userId);
+    if (!user) return false;
+    user.twoFactorEnabled = false;
+    user.twoFactorSecret = undefined;
+    user.backupCodesHashed = undefined;
+    this.users.set(userId, user);
+    return true;
+  }
+
+  public async verifyAndConsumeBackupCode(userId: string, code: string): Promise<boolean> {
+    const user = this.users.get(userId);
+    if (!user || !user.backupCodesHashed) return false;
+    const targetHash = TotpService.hashBackupCode(code);
+    const index = user.backupCodesHashed.indexOf(targetHash);
+    if (index !== -1) {
+      // Consume the backup code (single-use)
+      user.backupCodesHashed.splice(index, 1);
+      this.users.set(userId, user);
+      return true;
+    }
+    return false;
   }
 
   public async getAllUsers(): Promise<UserRecord[]> {

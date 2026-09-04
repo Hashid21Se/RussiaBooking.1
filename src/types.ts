@@ -305,6 +305,8 @@ export interface AuditLog {
   targetId: string;
   metadata?: Record<string, unknown>;
   ipAddress?: string;
+  previousHash?: string;
+  hash?: string;
 }
 
 export type SortOption = 'popularity' | 'price_low' | 'price_high' | 'rating' | 'stars';
