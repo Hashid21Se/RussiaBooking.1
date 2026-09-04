@@ -185,6 +185,7 @@ export interface Booking {
   paymentId?: string;
   specialRequests?: string;
   visaInvitationRequested?: boolean;
+  visaVoucherCode?: string;
   pointsEarned?: number;
   createdAt: string;
   updatedAt: string;
@@ -321,6 +322,8 @@ export interface UserProfile {
   nextTierPointsThreshold: number;
   memberSince: string;
   loyaltyTransactions: LoyaltyTransaction[];
+  loyaltyPoints?: number;
+  loyaltyTier?: LoyaltyTier;
   preferences?: {
     halalFood: boolean;
     prayerRugs: boolean;

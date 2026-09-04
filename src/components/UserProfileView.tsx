@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   User as UserIcon, 
   Mail, 
@@ -67,6 +67,22 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   const [prayerRugs, setPrayerRugs] = useState(profile.preferences?.prayerRugs ?? true);
   const [arabicSupport, setArabicSupport] = useState(profile.preferences?.arabicSupport ?? true);
   const [autoVisaVoucher, setAutoVisaVoucher] = useState(profile.preferences?.autoVisaVoucher ?? true);
+
+  // Sync state when profile prop changes
+  useEffect(() => {
+    setName(profile.name);
+    setEmail(profile.email);
+    setPhone(profile.phone);
+    setNationality(profile.nationality);
+    setPassportNumber(profile.passportNumber || '');
+    setCountry(profile.country);
+    if (profile.preferences) {
+      setHalalFood(profile.preferences.halalFood ?? true);
+      setPrayerRugs(profile.preferences.prayerRugs ?? true);
+      setArabicSupport(profile.preferences.arabicSupport ?? true);
+      setAutoVisaVoucher(profile.preferences.autoVisaVoucher ?? true);
+    }
+  }, [profile]);
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);

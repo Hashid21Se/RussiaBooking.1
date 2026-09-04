@@ -18,8 +18,124 @@ import { UserProfileView } from './components/UserProfileView';
 import { Footer } from './components/Footer';
 import { Language, translations } from './lib/i18n';
 import { Hotel, HotelRoom, RoomRate, SearchFilters, SupportedCurrency, Booking, UserProfile } from './types';
+import { SEED_HOTELS } from './server/seedData';
 import { HotelCard } from './components/HotelCard';
 import { Sparkles, Building, ArrowLeft, ArrowRight, ShieldCheck, Compass } from 'lucide-react';
+
+const INITIAL_BOOKINGS: Booking[] = [
+  {
+    id: 'book-init-1',
+    bookingCode: 'RB-2026-101',
+    userId: 'user-hashed-1',
+    userEmail: 'hashedalrajhi@gmail.com',
+    userPhone: '+966501234567',
+    hotelId: 'moscow-four-seasons',
+    hotelNameEn: 'Four Seasons Hotel Moscow',
+    hotelNameAr: 'فندق فور سيزونز موسكو',
+    hotelCity: 'Moscow',
+    hotelCityAr: 'موسكو',
+    hotelImage: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80',
+    roomId: 'fs-deluxe-king',
+    roomNameEn: 'Deluxe City View Room',
+    roomNameAr: 'غرفة ديلوكس بإطلالة على المدينة',
+    rateId: 'fs-deluxe-bb',
+    rateNameEn: 'Bed & Gourmet Halal Breakfast',
+    rateNameAr: 'شامل بوفيه إفطار فاخر مع خيارات حلال',
+    checkInDate: '2026-09-15',
+    checkOutDate: '2026-09-19',
+    nightsCount: 4,
+    guestsCount: 2,
+    guests: [
+      { fullName: 'سعد بن خالد الراجحي', nationality: 'Saudi Arabia', isPrimary: true, passportNumber: 'N12345678' },
+      { fullName: 'ضيف مرافق', nationality: 'Saudi Arabia', isPrimary: false }
+    ],
+    pricePerNightRub: 43500,
+    subtotalRub: 174000,
+    taxAmountRub: 17400,
+    platformFeeRub: 3480,
+    totalPriceRub: 194880,
+    totalPricePaidCurrency: 8185,
+    currencyPaid: 'SAR',
+    exchangeRateUsed: 0.0408,
+    status: 'CONFIRMED',
+    paymentStatus: 'CAPTURED',
+    paymentMethod: 'MADA',
+    paymentId: 'txn_mock_fs_101',
+    createdAt: '2026-08-20T10:00:00Z',
+    updatedAt: '2026-08-20T10:05:00Z',
+    specialRequests: 'طابق علوي، سجادة صلاة، استقبال باللغة العربية',
+    visaInvitationRequested: true,
+    visaVoucherCode: 'VOUCH-RB-2026-101-SA',
+  },
+];
+
+function filterHotelsClient(allHotels: Hotel[], filters: SearchFilters): Hotel[] {
+  let list = allHotels.filter(h => h.active);
+
+  if (filters.city && filters.city !== 'ALL') {
+    const q = filters.city.trim().toLowerCase();
+    list = list.filter(h =>
+      h.city.toLowerCase().includes(q) ||
+      h.cityAr.includes(q) ||
+      h.nameEn.toLowerCase().includes(q) ||
+      h.nameAr.includes(q)
+    );
+  }
+
+  if (filters.stars && filters.stars.length > 0) {
+    list = list.filter(h => filters.stars!.includes(h.stars));
+  }
+
+  if (filters.minPrice) {
+    list = list.filter(h => h.minPriceRub >= filters.minPrice!);
+  }
+
+  if (filters.maxPrice) {
+    list = list.filter(h => h.minPriceRub <= filters.maxPrice!);
+  }
+
+  if (filters.minRating) {
+    list = list.filter(h => h.rating >= filters.minRating!);
+  }
+
+  if (filters.freeCancellationOnly) {
+    list = list.filter(h => (h.policies.freeCancellationHours || 0) > 0);
+  }
+
+  if (filters.breakfastIncludedOnly) {
+    list = list.filter(h =>
+      h.rooms.some(r => r.rates.some(rate => rate.breakfastIncluded))
+    );
+  }
+
+  if (filters.halalFriendlyOnly) {
+    list = list.filter(h =>
+      h.amenities.includes('halalCertified') || h.policies.halalCertifiedFood
+    );
+  }
+
+  if (filters.amenities && filters.amenities.length > 0) {
+    list = list.filter(h =>
+      filters.amenities!.every(a => h.amenities.includes(a as any))
+    );
+  }
+
+  // Sorting
+  if (filters.sortBy === 'price_low') {
+    list.sort((a, b) => a.minPriceRub - b.minPriceRub);
+  } else if (filters.sortBy === 'price_high') {
+    list.sort((a, b) => b.minPriceRub - a.minPriceRub);
+  } else if (filters.sortBy === 'rating') {
+    list.sort((a, b) => b.rating - a.rating);
+  } else if (filters.sortBy === 'stars') {
+    list.sort((a, b) => b.stars - a.stars);
+  } else {
+    // popularity
+    list.sort((a, b) => (b.reviewCount * b.rating) - (a.reviewCount * a.rating));
+  }
+
+  return list;
+}
 
 export default function App() {
   // Global App States
@@ -30,7 +146,7 @@ export default function App() {
   const [userRole, setUserRole] = useState<'USER' | 'ADMIN'>('USER');
 
   // Inventory & Search States
-  const [hotels, setHotels] = useState<Hotel[]>([]);
+  const [hotels, setHotels] = useState<Hotel[]>(SEED_HOTELS);
   const [loadingHotels, setLoadingHotels] = useState(false);
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
     sortBy: 'popularity',
@@ -42,38 +158,63 @@ export default function App() {
   const [selectedRate, setSelectedRate] = useState<RoomRate | null>(null);
 
   // Bookings & Customer States
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>(() => {
+    try {
+      const saved = localStorage.getItem('russiabooking_bookings');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return INITIAL_BOOKINGS;
+  });
   const [confirmedBooking, setConfirmedBooking] = useState<Booking | null>(null);
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const [userProfile, setUserProfile] = useState<UserProfile>({
-    id: 'guest-user',
-    name: 'سعد بن خالد الراجحي',
-    email: 'saad.alrajhi@example.com',
-    phone: '+966 50 123 4567',
-    nationality: 'Saudi Arabia',
-    passportNumber: 'N12345678',
-    country: 'Saudi Arabia',
-    loyaltyTier: 'SILVER',
-    loyaltyPoints: 1948,
-    lifetimePoints: 1948,
-    memberSince: '2024-01-15',
-    preferences: {
-      halalFood: true,
-      prayerRugs: true,
-      arabicSupport: true,
-      autoVisaVoucher: true,
-    },
-    transactions: [
-      {
-        id: 'tx_init',
-        bookingId: 'RU-2024-8891',
-        hotelName: 'The St. Regis Moscow Nikolskaya',
-        type: 'EARN',
-        points: 1948,
-        date: '2024-03-20',
-        description: 'Completed stay points (Silver Tier 1.25x)',
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('russiabooking_favorites');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return ['moscow-four-seasons'];
+  });
+  const [userProfile, setUserProfile] = useState<UserProfile>(() => {
+    const defaultProfile: UserProfile = {
+      id: 'user-hashed-1',
+      name: 'سعد بن خالد الراجحي',
+      email: 'hashedalrajhi@gmail.com',
+      phone: '+966 50 123 4567',
+      nationality: 'Saudi Arabia',
+      passportNumber: 'N12345678',
+      country: 'المملكة العربية السعودية',
+      tier: 'GOLD',
+      loyaltyTier: 'GOLD',
+      totalPoints: 7048,
+      loyaltyPoints: 7048,
+      lifetimePoints: 7048,
+      nextTierPointsThreshold: 10000,
+      memberSince: '2026-01-15T10:00:00Z',
+      preferences: {
+        halalFood: true,
+        prayerRugs: true,
+        arabicSupport: true,
+        autoVisaVoucher: true,
       },
-    ],
+      loyaltyTransactions: [
+        {
+          id: 'tx-init-6',
+          bookingId: 'book-init-1',
+          bookingCode: 'RB-2026-101',
+          hotelNameEn: 'Four Seasons Hotel Moscow',
+          hotelNameAr: 'فندق فور سيزونز موسكو',
+          points: 1948,
+          type: 'EARNED',
+          descriptionEn: 'Earned on completed booking at Four Seasons Hotel Moscow',
+          descriptionAr: 'نقاط مكتسبة عن حجز مؤكد ومكتمل في فندق فور سيزونز موسكو',
+          createdAt: '2026-08-20T10:05:00Z',
+        },
+      ],
+    };
+    try {
+      const saved = localStorage.getItem('russiabooking_profile');
+      if (saved) return { ...defaultProfile, ...JSON.parse(saved) };
+    } catch (e) {}
+    return defaultProfile;
   });
 
   // Toast Notification State
@@ -99,7 +240,7 @@ export default function App() {
     }
   }, [theme]);
 
-  // Fetch Hotels API
+  // Fetch Hotels API with client-side fallback
   const fetchHotels = useCallback(async (filters: SearchFilters = searchFilters) => {
     setLoadingHotels(true);
     try {
@@ -117,18 +258,24 @@ export default function App() {
       if (filters.amenities && filters.amenities.length > 0) params.append('amenities', filters.amenities.join(','));
 
       const res = await fetch(`/api/hotels?${params.toString()}`);
-      const json = await res.json();
-      if (json.success) {
-        setHotels(json.data);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          setHotels(json.data);
+          return;
+        }
       }
     } catch (err) {
-      console.error('Error fetching hotels:', err);
+      // API not reachable or static deployment (e.g. GitHub Pages)
     } finally {
       setLoadingHotels(false);
     }
+
+    // Client-side filtering fallback
+    setHotels(filterHotelsClient(SEED_HOTELS, filters));
   }, [searchFilters]);
 
-  // Fetch Bookings, Favorites & User Profile API
+  // Fetch Bookings, Favorites & User Profile API with localStorage fallback
   const fetchBookingsAndFavorites = useCallback(async () => {
     try {
       const [bRes, fRes, pRes] = await Promise.all([
@@ -136,13 +283,35 @@ export default function App() {
         fetch('/api/favorites?userId=guest-user'),
         fetch('/api/user/profile?userId=guest-user'),
       ]);
-      const [bJson, fJson, pJson] = await Promise.all([bRes.json(), fRes.json(), pRes.json()]);
-      if (bJson.success) setBookings(bJson.data);
-      if (fJson.success) setFavorites(fJson.data);
-      if (pJson.success && pJson.data) setUserProfile(pJson.data);
+      if (bRes.ok && fRes.ok && pRes.ok) {
+        const [bJson, fJson, pJson] = await Promise.all([bRes.json(), fRes.json(), pRes.json()]);
+        if (bJson.success && Array.isArray(bJson.data)) {
+          setBookings(bJson.data);
+          localStorage.setItem('russiabooking_bookings', JSON.stringify(bJson.data));
+        }
+        if (fJson.success && Array.isArray(fJson.data)) {
+          setFavorites(fJson.data);
+          localStorage.setItem('russiabooking_favorites', JSON.stringify(fJson.data));
+        }
+        if (pJson.success && pJson.data) {
+          setUserProfile(pJson.data);
+          localStorage.setItem('russiabooking_profile', JSON.stringify(pJson.data));
+        }
+        return;
+      }
     } catch (err) {
-      console.error('Error fetching bookings/favorites/profile:', err);
+      // Fallback to local data (GitHub Pages)
     }
+
+    // Load from local storage
+    try {
+      const savedBookings = localStorage.getItem('russiabooking_bookings');
+      if (savedBookings) setBookings(JSON.parse(savedBookings));
+      const savedFavs = localStorage.getItem('russiabooking_favorites');
+      if (savedFavs) setFavorites(JSON.parse(savedFavs));
+      const savedProf = localStorage.getItem('russiabooking_profile');
+      if (savedProf) setUserProfile(JSON.parse(savedProf));
+    } catch (e) {}
   }, []);
 
   const handleUpdateProfile = async (updated: Partial<UserProfile>) => {
@@ -152,14 +321,26 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: 'guest-user', ...updated }),
       });
-      const json = await res.json();
-      if (json.success) {
-        setUserProfile(json.data);
-        showToast(lang === 'ar' ? 'تم حفظ بيانات الملف الشخصي بنجاح' : 'Profile updated successfully');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) {
+          setUserProfile(json.data);
+          localStorage.setItem('russiabooking_profile', JSON.stringify(json.data));
+          showToast(lang === 'ar' ? 'تم حفظ بيانات الملف الشخصي بنجاح' : 'Profile updated successfully');
+          return;
+        }
       }
     } catch (err) {
-      console.error('Error updating user profile:', err);
+      // Fallback
     }
+
+    // Client fallback
+    setUserProfile((prev) => {
+      const next = { ...prev, ...updated };
+      localStorage.setItem('russiabooking_profile', JSON.stringify(next));
+      return next;
+    });
+    showToast(lang === 'ar' ? 'تم حفظ بيانات الملف الشخصي بنجاح' : 'Profile updated successfully');
   };
 
   useEffect(() => {
@@ -167,7 +348,7 @@ export default function App() {
     fetchBookingsAndFavorites();
   }, [fetchHotels, fetchBookingsAndFavorites]);
 
-  // Favorite toggle handler
+  // Favorite toggle handler with client-side persistence
   const handleToggleFavorite = async (hotelId: string) => {
     try {
       const res = await fetch('/api/favorites/toggle', {
@@ -175,20 +356,38 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: 'guest-user', hotelId }),
       });
-      const json = await res.json();
-      if (json.success) {
-        setFavorites((prev) =>
-          json.isFavorited ? [...prev, hotelId] : prev.filter((id) => id !== hotelId)
-        );
-        showToast(
-          json.isFavorited
-            ? (lang === 'ar' ? 'تمت إضافة الفندق إلى قائمة المفضلة' : 'Added to favorites')
-            : (lang === 'ar' ? 'تمت إزالة الفندق من المفضلة' : 'Removed from favorites')
-        );
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) {
+          setFavorites((prev) => {
+            const next = json.isFavorited ? [...prev, hotelId] : prev.filter((id) => id !== hotelId);
+            localStorage.setItem('russiabooking_favorites', JSON.stringify(next));
+            return next;
+          });
+          showToast(
+            json.isFavorited
+              ? (lang === 'ar' ? 'تمت إضافة الفندق إلى قائمة المفضلة' : 'Added to favorites')
+              : (lang === 'ar' ? 'تمت إزالة الفندق من المفضلة' : 'Removed from favorites')
+          );
+          return;
+        }
       }
     } catch (err) {
-      console.error('Error toggling favorite:', err);
+      // Fallback
     }
+
+    // Client-side toggle fallback
+    setFavorites((prev) => {
+      const exists = prev.includes(hotelId);
+      const next = exists ? prev.filter((id) => id !== hotelId) : [...prev, hotelId];
+      localStorage.setItem('russiabooking_favorites', JSON.stringify(next));
+      showToast(
+        !exists
+          ? (lang === 'ar' ? 'تمت إضافة الفندق إلى قائمة المفضلة' : 'Added to favorites')
+          : (lang === 'ar' ? 'تمت إزالة الفندق من المفضلة' : 'Removed from favorites')
+      );
+      return next;
+    });
   };
 
   // Navigate with window scroll reset
@@ -223,9 +422,17 @@ export default function App() {
     handleNavigate('booking');
   };
 
-  // Booking completion
+  // Booking completion with offline / static persistence
   const handleBookingComplete = (booking: Booking) => {
     setConfirmedBooking(booking);
+    setBookings((prev) => {
+      const exists = prev.some((b) => b.id === booking.id || b.bookingCode === booking.bookingCode);
+      const next = exists ? prev.map((b) => (b.id === booking.id ? booking : b)) : [booking, ...prev];
+      try {
+        localStorage.setItem('russiabooking_bookings', JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
     fetchBookingsAndFavorites();
     handleNavigate('confirmation');
     showToast(
@@ -235,7 +442,7 @@ export default function App() {
     );
   };
 
-  // Cancel booking handler
+  // Cancel booking handler with local fallback
   const handleCancelBooking = async (bookingId: string, reason: string) => {
     try {
       const res = await fetch(`/api/bookings/${bookingId}/cancel`, {
@@ -243,18 +450,35 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason }),
       });
-      const json = await res.json();
-      if (json.success) {
-        fetchBookingsAndFavorites();
-        showToast(
-          lang === 'ar'
-            ? 'تم إلغاء الحجز بنجاح ومعالجة الاسترداد للبطاقة'
-            : 'Booking cancelled and refund initiated.'
-        );
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) {
+          fetchBookingsAndFavorites();
+          showToast(
+            lang === 'ar'
+              ? 'تم إلغاء الحجز بنجاح ومعالجة الاسترداد للبطاقة'
+              : 'Booking cancelled and refund initiated.'
+          );
+          return;
+        }
       }
     } catch (err) {
-      console.error('Failed to cancel booking:', err);
+      // Fallback
     }
+
+    // Client-side cancel fallback
+    setBookings((prev) => {
+      const next = prev.map((b) => (b.id === bookingId ? { ...b, status: 'CANCELLED' as const } : b));
+      try {
+        localStorage.setItem('russiabooking_bookings', JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
+    showToast(
+      lang === 'ar'
+        ? 'تم إلغاء الحجز بنجاح ومعالجة الاسترداد للبطاقة'
+        : 'Booking cancelled and refund initiated.'
+    );
   };
 
   const t = translations[lang];
@@ -283,7 +507,7 @@ export default function App() {
         onNavigate={handleNavigate}
         savedCount={favorites.length}
         bookingsCount={bookings.filter((b) => b.status === 'CONFIRMED').length}
-        loyaltyPoints={userProfile.loyaltyPoints}
+        loyaltyPoints={userProfile.totalPoints ?? userProfile.loyaltyPoints ?? 0}
         userRole={userRole}
         onToggleRole={() => {
           const nextRole = userRole === 'USER' ? 'ADMIN' : 'USER';
@@ -409,7 +633,7 @@ export default function App() {
             booking={confirmedBooking}
             lang={lang}
             currency={currency}
-            totalLoyaltyBalance={userProfile.loyaltyPoints}
+            totalLoyaltyBalance={userProfile.totalPoints ?? userProfile.loyaltyPoints ?? 0}
             onViewProfile={() => handleNavigate('profile')}
             onViewMyBookings={() => handleNavigate('my-bookings')}
             onGoHome={() => handleNavigate('home')}
@@ -422,7 +646,7 @@ export default function App() {
             bookings={bookings}
             lang={lang}
             currency={currency}
-            loyaltyPoints={userProfile.loyaltyPoints}
+            loyaltyPoints={userProfile.totalPoints ?? userProfile.loyaltyPoints ?? 0}
             onViewProfile={() => handleNavigate('profile')}
             onSelectBookingForVoucher={(b) => {
               setConfirmedBooking(b);

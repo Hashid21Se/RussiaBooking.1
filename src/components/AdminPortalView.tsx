@@ -19,8 +19,20 @@ import {
   Send
 } from 'lucide-react';
 import { AdminMetrics, Booking, Hotel, SettlementRecord, AuditLogRecord, SupportedCurrency } from '../types';
+import { SEED_HOTELS } from '../server/seedData';
 import { Language, translations } from '../lib/i18n';
 import { CurrencyService } from '../lib/currency';
+
+const DEFAULT_METRICS: AdminMetrics = {
+  totalBookings: 142,
+  confirmedBookings: 128,
+  grossRevenueRub: 18450000,
+  platformCommissionRub: 2214000,
+  hotelEarningsRub: 16236000,
+  refundsTotalRub: 0,
+  pendingSettlementsCount: 3,
+  activeHotelsCount: 7,
+};
 
 interface AdminPortalViewProps {
   lang: Language;
@@ -55,23 +67,34 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
         fetch('/api/admin/audit-logs'),
       ]);
 
-      const [mJson, bJson, hJson, sJson, aJson] = await Promise.all([
-        mRes.json(),
-        bRes.json(),
-        hRes.json(),
-        sRes.json(),
-        aRes.json(),
-      ]);
+      if (mRes.ok && bRes.ok && hRes.ok && sRes.ok && aRes.ok) {
+        const [mJson, bJson, hJson, sJson, aJson] = await Promise.all([
+          mRes.json(),
+          bRes.json(),
+          hRes.json(),
+          sRes.json(),
+          aRes.json(),
+        ]);
 
-      if (mJson.success) setMetrics(mJson.data);
-      if (bJson.success) setBookings(bJson.data);
-      if (hJson.success) setHotels(hJson.data);
-      if (sJson.success) setSettlements(sJson.data);
-      if (aJson.success) setAuditLogs(aJson.data);
+        if (mJson.success) setMetrics(mJson.data);
+        if (bJson.success) setBookings(bJson.data);
+        if (hJson.success) setHotels(hJson.data);
+        if (sJson.success) setSettlements(sJson.data);
+        if (aJson.success) setAuditLogs(aJson.data);
+        return;
+      }
     } catch (err) {
-      console.error('Failed to load admin data:', err);
+      // Fallback to static mock data
     } finally {
       setLoading(false);
+    }
+
+    // Static fallback for GitHub Pages
+    setMetrics(DEFAULT_METRICS);
+    setHotels(SEED_HOTELS);
+    const localBookings = localStorage.getItem('russiabooking_bookings');
+    if (localBookings) {
+      try { setBookings(JSON.parse(localBookings)); } catch (e) {}
     }
   };
 
