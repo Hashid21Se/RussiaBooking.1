@@ -25,6 +25,7 @@ import { Hotel, HotelRoom, RoomRate, SupportedCurrency } from '../types';
 import { Language, translations } from '../lib/i18n';
 import { CurrencyService } from '../lib/currency';
 import { GuestReviewsBreakdown } from './GuestReviewsBreakdown';
+import { OptimizedImage } from './OptimizedImage';
 
 interface HotelDetailsViewProps {
   hotel: Hotel;
@@ -144,14 +145,16 @@ export const HotelDetailsView: React.FC<HotelDetailsViewProps> = ({
       </div>
 
       {/* Gallery Section */}
-      <section className="space-y-3">
+      <section className="space-y-3" aria-label={lang === 'ar' ? 'معرض صور الفندق' : 'Hotel Photo Gallery'}>
         <div className="relative aspect-[16/9] md:aspect-[21/9] w-full overflow-hidden rounded-3xl bg-slate-900 shadow-lg">
-          <img
+          <OptimizedImage
             src={hotel.images[selectedImageIndex]?.url || hotel.images[0]?.url}
-            alt="Hotel main preview"
+            alt={lang === 'ar' ? hotel.nameAr : hotel.nameEn}
+            priority={true}
             className="h-full w-full object-cover transition-opacity duration-300"
+            containerClassName="h-full w-full"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none"></div>
           
           <div className="absolute bottom-4 start-4 text-white text-xs sm:text-sm font-medium">
             {lang === 'ar' 
@@ -321,7 +324,12 @@ export const HotelDetailsView: React.FC<HotelDetailsViewProps> = ({
                 </div>
 
                 <div className="w-full md:w-56 h-36 rounded-xl overflow-hidden shrink-0">
-                  <img src={room.images[0]} alt="room" className="h-full w-full object-cover" />
+                  <OptimizedImage 
+                    src={room.images[0]} 
+                    alt={lang === 'ar' ? room.nameAr : room.nameEn} 
+                    className="h-full w-full object-cover" 
+                    containerClassName="h-full w-full"
+                  />
                 </div>
               </div>
 

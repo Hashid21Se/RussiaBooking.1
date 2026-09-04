@@ -18,6 +18,7 @@ import {
 import { Hotel, SupportedCurrency } from '../types';
 import { Language, translations } from '../lib/i18n';
 import { CurrencyService } from '../lib/currency';
+import { OptimizedImage } from './OptimizedImage';
 
 interface HotelCardProps {
   hotel: Hotel;
@@ -50,11 +51,11 @@ export const HotelCard: React.FC<HotelCardProps> = ({
     >
       {/* Image Thumbnail Container */}
       <div className="relative w-full sm:w-72 md:w-80 shrink-0 aspect-[16/11] sm:aspect-auto overflow-hidden bg-[#F3F4F6] dark:bg-slate-800">
-        <img
+        <OptimizedImage
           src={primaryImage}
           alt={lang === 'ar' ? hotel.nameAr : hotel.nameEn}
           className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-          loading="lazy"
+          containerClassName="h-full w-full"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent sm:hidden"></div>
 

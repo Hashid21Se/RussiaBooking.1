@@ -39,6 +39,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
   <body class="bg-[#F8F9FA] text-[#1A1A1A] antialiased dark:bg-[#0F141C] dark:text-[#F3F4F6] min-h-screen font-sans">
+    <!-- WCAG 2.1 AA Accessible Skip to Main Content Link -->
+    <a 
+      href="#main-content" 
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:start-3 focus:z-50 focus:px-4 focus:py-2.5 focus:bg-rose-600 focus:text-white focus:font-bold focus:rounded-xl focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500"
+    >
+      تخطي إلى المحتوى الرئيسي / Skip to main content
+    </a>
+
+    <noscript>
+      <div style="padding: 20px; background-color: #fff3cd; color: #856404; text-align: center; font-family: sans-serif;">
+        <strong>ملاحظة:</strong> يتطلب هذا الموقع تفعيل JavaScript للحصول على تجربة حجز متكاملة وتفاعلية.
+      </div>
+    </noscript>
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

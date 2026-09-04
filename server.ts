@@ -6,7 +6,9 @@
 
 import express, { Request, Response, NextFunction } from 'express';
 import path from 'path';
+import fs from 'fs';
 import cookieParser from 'cookie-parser';
+import compression from 'compression';
 import { z } from 'zod';
 import { LocalDatabaseProvider } from './src/server/inventoryProvider';
 import { BookingEngine } from './src/server/bookingEngine';
@@ -21,9 +23,14 @@ import partnerController from './src/server/controllers/partnerController';
 import adminController from './src/server/controllers/adminController';
 import { dbManager } from './src/server/database/postgresClient';
 import { taskQueue } from './src/server/queue/taskQueue';
+import { hotelRepository } from './src/server/repositories/hotelRepository';
+import { SeoRenderer } from './src/server/ssr/seoRenderer';
 
 const app = express();
 const PORT = 3000;
+
+// High Performance Compression (Gzip / Brotli for Lighthouse >= 90)
+app.use(compression());
 
 // Security & Parsing Middlewares
 app.use(express.json());
@@ -339,7 +346,29 @@ app.get('/api/loyalty/balance', (req: Request, res: Response) => {
 });
 
 // ==========================================
-// 8. VITE MIDDLEWARE & STATIC ASSETS
+// 8. SITEMAP & ROBOTS.TXT (SEO Architecture)
+// ==========================================
+app.get('/sitemap.xml', async (req: Request, res: Response) => {
+  try {
+    const host = req.get('host') || 'russiabooking.com';
+    const xml = await SeoRenderer.generateSitemap(host);
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.send(xml);
+  } catch (err: any) {
+    res.status(500).send('Error generating sitemap');
+  }
+});
+
+app.get('/robots.txt', (req: Request, res: Response) => {
+  const host = req.get('host') || 'russiabooking.com';
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.send(SeoRenderer.generateRobotsTxt(host));
+});
+
+// ==========================================
+// 9. VITE MIDDLEWARE & PRODUCTION SSR ENGINE
 // ==========================================
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
@@ -348,12 +377,66 @@ async function startServer() {
       server: { middlewareMode: true },
       appType: 'spa',
     });
+
+    // Dynamic SSR / SEO Interceptor for Hotel Pages in Development
+    app.get(['/hotel/:id', '/hotels/:id'], async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const hotelId = req.params.id;
+        const hotel = await hotelRepository.findById(hotelId);
+        const host = req.get('host') || 'localhost:3000';
+        const lang = (req.query.lang as any) || (req.cookies?.russiabooking_lang as any) || 'ar';
+
+        const indexFile = path.resolve(process.cwd(), 'index.html');
+        let template = fs.readFileSync(indexFile, 'utf-8');
+        template = await vite.transformIndexHtml(req.originalUrl, template);
+
+        const meta = hotel 
+          ? SeoRenderer.generateHotelMetadata(hotel, host, lang)
+          : SeoRenderer.getDefaultMetadata(host, lang);
+
+        const rendered = SeoRenderer.injectMetadata(template, meta);
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(rendered);
+      } catch (e) {
+        next(e);
+      }
+    });
+
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
+    // Static assets with long-term cache
+    app.use('/assets', express.static(path.join(distPath, 'assets'), {
+      maxAge: '1y',
+      immutable: true,
+    }));
     app.use(express.static(distPath));
-    app.get('*', (req: Request, res: Response) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+
+    // Dynamic SSR / SEO Fallback in Production
+    app.get('*', async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const distIndex = path.join(distPath, 'index.html');
+        if (!fs.existsSync(distIndex)) {
+          return res.status(404).send('Build files not found.');
+        }
+
+        const host = req.get('host') || 'russiabooking.com';
+        const lang = (req.query.lang as any) || (req.cookies?.russiabooking_lang as any) || 'ar';
+        let template = fs.readFileSync(distIndex, 'utf-8');
+
+        // Extract hotel if URL is /hotel/:id or query has ?hotel=...
+        const hotelMatch = req.path.match(/^\/(?:hotel|hotels)\/([^/]+)/);
+        const hotelId = hotelMatch ? hotelMatch[1] : (req.query.hotel as string);
+
+        const hotel = hotelId ? await hotelRepository.findById(hotelId) : null;
+        const meta = hotel 
+          ? SeoRenderer.generateHotelMetadata(hotel, host, lang)
+          : SeoRenderer.getDefaultMetadata(host, lang);
+
+        const rendered = SeoRenderer.injectMetadata(template, meta);
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(rendered);
+      } catch (e) {
+        next(e);
+      }
     });
   }
 

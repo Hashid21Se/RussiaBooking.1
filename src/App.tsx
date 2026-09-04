@@ -3,25 +3,47 @@
  * Production-Ready Full-Stack SaaS & PWA Experience
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { Header } from './components/Header';
 import { HeroSearch } from './components/HeroSearch';
 import { DestinationsGuide } from './components/DestinationsGuide';
-import { SearchResultsView } from './components/SearchResultsView';
-import { HotelDetailsView } from './components/HotelDetailsView';
-import { BookingCheckoutView } from './components/BookingCheckoutView';
-import { BookingConfirmationView } from './components/BookingConfirmationView';
-import { MyBookingsView } from './components/MyBookingsView';
-import { SavedFavoritesView } from './components/SavedFavoritesView';
-import { AdminPortalView } from './components/AdminPortalView';
-import { UserProfileView } from './components/UserProfileView';
-import { AuthModal } from './components/AuthModal';
 import { Footer } from './components/Footer';
 import { Language, translations } from './lib/i18n';
 import { Hotel, HotelRoom, RoomRate, SearchFilters, SupportedCurrency, Booking, UserProfile, User, UserRole } from './types';
 import { SEED_HOTELS } from './server/seedData';
 import { HotelCard } from './components/HotelCard';
-import { Sparkles, Building, ArrowLeft, ArrowRight, ShieldCheck, Compass } from 'lucide-react';
+import { Sparkles, Building, ArrowLeft, ArrowRight, ShieldCheck, Compass, Loader2 } from 'lucide-react';
+
+// Production Performance Code Splitting (React.lazy + Suspense for Lighthouse Score >= 90)
+const SearchResultsView = lazy(() => import('./components/SearchResultsView').then(m => ({ default: m.SearchResultsView })));
+const HotelDetailsView = lazy(() => import('./components/HotelDetailsView').then(m => ({ default: m.HotelDetailsView })));
+const BookingCheckoutView = lazy(() => import('./components/BookingCheckoutView').then(m => ({ default: m.BookingCheckoutView })));
+const BookingConfirmationView = lazy(() => import('./components/BookingConfirmationView').then(m => ({ default: m.BookingConfirmationView })));
+const MyBookingsView = lazy(() => import('./components/MyBookingsView').then(m => ({ default: m.MyBookingsView })));
+const SavedFavoritesView = lazy(() => import('./components/SavedFavoritesView').then(m => ({ default: m.SavedFavoritesView })));
+const AdminPortalView = lazy(() => import('./components/AdminPortalView').then(m => ({ default: m.AdminPortalView })));
+const UserProfileView = lazy(() => import('./components/UserProfileView').then(m => ({ default: m.UserProfileView })));
+const AuthModal = lazy(() => import('./components/AuthModal').then(m => ({ default: m.AuthModal })));
+
+/**
+ * Accessible View Fallback skeleton with ARIA live region
+ */
+const ViewFallback: React.FC<{ lang?: Language }> = ({ lang = 'ar' }) => (
+  <div 
+    className="mx-auto max-w-7xl px-4 sm:px-6 py-16 flex flex-col items-center justify-center min-h-[50vh]"
+    role="status"
+    aria-live="polite"
+    aria-label={lang === 'ar' ? 'جاري تحميل المحتوى' : 'Loading content'}
+  >
+    <div className="relative mb-4 flex items-center justify-center">
+      <Loader2 className="w-10 h-10 text-rose-600 animate-spin" />
+    </div>
+    <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+      {lang === 'ar' ? 'جاري تحميل الصفحة، لحظات من فضلك...' : 'Loading page, please wait...'}
+    </p>
+    <span className="sr-only">{lang === 'ar' ? 'جاري تحميل الصفحة' : 'Page is loading'}</span>
+  </div>
+);
 
 const INITIAL_BOOKINGS: Booking[] = [
   {
@@ -417,6 +439,50 @@ export default function App() {
     fetchBookingsAndFavorites();
   }, [fetchHotels, fetchBookingsAndFavorites]);
 
+  // Deep-link check for hotel pages & query params (Client / SSR Parity)
+  useEffect(() => {
+    if (hotels.length === 0) return;
+    const path = window.location.pathname;
+    const match = path.match(/^\/(?:hotel|hotels)\/([^/]+)/);
+    const searchParams = new URLSearchParams(window.location.search);
+    const hotelIdFromQuery = searchParams.get('hotel');
+    const targetId = match ? match[1] : hotelIdFromQuery;
+
+    if (targetId) {
+      const found = hotels.find((h) => h.id === targetId);
+      if (found) {
+        setSelectedHotel(found);
+        setCurrentView('hotel-details');
+      }
+    }
+  }, [hotels]);
+
+  // Sync dynamic document title, HTML lang and dir for WCAG AA and SEO
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+
+    if (currentView === 'hotel-details' && selectedHotel) {
+      document.title = lang === 'ar' 
+        ? `${selectedHotel.nameAr} | حجز فنادق ${selectedHotel.cityAr} - RussiaBooking` 
+        : `${selectedHotel.nameEn} | Luxury Hotels in ${selectedHotel.city} - RussiaBooking`;
+    } else if (currentView === 'booking' && selectedHotel) {
+      document.title = lang === 'ar'
+        ? `إتمام حجز ${selectedHotel.nameAr} - RussiaBooking`
+        : `Booking Checkout: ${selectedHotel.nameEn} - RussiaBooking`;
+    } else if (currentView === 'my-bookings') {
+      document.title = lang === 'ar' ? 'حجوزاتي وإدارة التذاكر - RussiaBooking' : 'My Bookings - RussiaBooking';
+    } else if (currentView === 'profile') {
+      document.title = lang === 'ar' ? 'الملف الشخصي وبرنامج الولاء - RussiaBooking' : 'Profile & Loyalty Rewards - RussiaBooking';
+    } else if (currentView === 'search') {
+      document.title = lang === 'ar' ? 'نتائج البحث عن فنادق روسيا - RussiaBooking' : 'Search Luxury Hotels in Russia - RussiaBooking';
+    } else {
+      document.title = lang === 'ar' 
+        ? 'RussiaBooking | منصة حجز فنادق روسيا الفاخرة' 
+        : 'RussiaBooking | Premium Russian Hotels & Resorts for GCC Travelers';
+    }
+  }, [lang, currentView, selectedHotel]);
+
   // Favorite toggle handler with client-side persistence
   const handleToggleFavorite = async (hotelId: string) => {
     try {
@@ -558,7 +624,11 @@ export default function App() {
     <div className="min-h-screen flex flex-col bg-[#F8F9FA] text-[#1A1A1A] dark:bg-[#0F141C] dark:text-white font-sans transition-colors">
       {/* Toast Notification */}
       {toastMsg && (
-        <div className="fixed top-20 start-1/2 -translate-x-1/2 z-50 rounded-2xl bg-[#111827] text-white dark:bg-white dark:text-[#111827] px-5 py-3 text-xs sm:text-sm font-bold shadow-2xl backdrop-blur-md border border-gray-200 dark:border-slate-700 flex items-center gap-2 animate-bounce">
+        <div 
+          role="status" 
+          aria-live="polite" 
+          className="fixed top-20 start-1/2 -translate-x-1/2 z-50 rounded-2xl bg-[#111827] text-white dark:bg-white dark:text-[#111827] px-5 py-3 text-xs sm:text-sm font-bold shadow-2xl backdrop-blur-md border border-gray-200 dark:border-slate-700 flex items-center gap-2 animate-bounce"
+        >
           <Sparkles className="w-4 h-4 text-[#E11D48]" />
           <span>{toastMsg}</span>
         </div>
@@ -589,193 +659,195 @@ export default function App() {
         onLogout={handleLogout}
       />
 
-      {/* Main Content Render Area */}
-      <div className="flex-1">
-        {/* VIEW: HOME */}
-        {currentView === 'home' && (
-          <div>
-            <HeroSearch
-              lang={lang}
-              onSearch={handleSearch}
-              onSelectCity={handleSelectCity}
-            />
+      {/* Main Content Render Area - WCAG 2.1 AA Accessible Landmark */}
+      <main id="main-content" role="main" tabIndex={-1} className="flex-1 focus:outline-none">
+        <Suspense fallback={<ViewFallback lang={lang} />}>
+          {/* VIEW: HOME */}
+          {currentView === 'home' && (
+            <div>
+              <HeroSearch
+                lang={lang}
+                onSearch={handleSearch}
+                onSelectCity={handleSelectCity}
+              />
 
-            {/* Featured Luxury Hotels Section */}
-            <section className="mx-auto max-w-7xl px-4 sm:px-6 py-10 md:py-12">
-              <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-6">
-                <div>
-                  <div className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#9CA3AF] dark:text-slate-400 mb-1">
-                    <Sparkles className="w-3.5 h-3.5 text-[#E11D48]" />
-                    <span>{lang === 'ar' ? 'فنادق مختارة حصرياً' : 'Handpicked for GCC Travelers'}</span>
+              {/* Featured Luxury Hotels Section */}
+              <section className="mx-auto max-w-7xl px-4 sm:px-6 py-10 md:py-12">
+                <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-6">
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#9CA3AF] dark:text-slate-400 mb-1">
+                      <Sparkles className="w-3.5 h-3.5 text-[#E11D48]" />
+                      <span>{lang === 'ar' ? 'فنادق مختارة حصرياً' : 'Handpicked for GCC Travelers'}</span>
+                    </div>
+                    <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#111827] dark:text-white">
+                      {lang === 'ar' ? 'أفخم الفنادق والمنتجعات الموصى بها في روسيا' : 'Top Luxury Stays in Russia'}
+                    </h2>
                   </div>
-                  <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#111827] dark:text-white">
-                    {lang === 'ar' ? 'أفخم الفنادق والمنتجعات الموصى بها في روسيا' : 'Top Luxury Stays in Russia'}
-                  </h2>
+                  <button
+                    onClick={() => handleNavigate('search')}
+                    className="text-xs sm:text-sm font-semibold text-[#E11D48] underline underline-offset-4 hover:opacity-85 flex items-center gap-1 self-start sm:self-auto transition"
+                  >
+                    <span>{lang === 'ar' ? 'تصفح كل الفنادق' : 'View all hotels'}</span>
+                    {lang === 'ar' ? <ArrowLeft className="w-3.5 h-3.5" /> : <ArrowRight className="w-3.5 h-3.5" />}
+                  </button>
                 </div>
-                <button
-                  onClick={() => handleNavigate('search')}
-                  className="text-xs sm:text-sm font-semibold text-[#E11D48] underline underline-offset-4 hover:opacity-85 flex items-center gap-1 self-start sm:self-auto transition"
-                >
-                  <span>{lang === 'ar' ? 'تصفح كل الفنادق' : 'View all hotels'}</span>
-                  {lang === 'ar' ? <ArrowLeft className="w-3.5 h-3.5" /> : <ArrowRight className="w-3.5 h-3.5" />}
-                </button>
-              </div>
 
-              <div className="space-y-4">
-                {(featuredHotels.length > 0 ? featuredHotels : hotels.slice(0, 3)).map((hotel) => (
-                  <HotelCard
-                    key={hotel.id}
-                    hotel={hotel}
-                    lang={lang}
-                    currency={currency}
-                    isFavorite={favorites.includes(hotel.id)}
-                    onToggleFavorite={handleToggleFavorite}
-                    onSelect={handleSelectHotel}
-                  />
-                ))}
-              </div>
-            </section>
+                <div className="space-y-4">
+                  {(featuredHotels.length > 0 ? featuredHotels : hotels.slice(0, 3)).map((hotel) => (
+                    <HotelCard
+                      key={hotel.id}
+                      hotel={hotel}
+                      lang={lang}
+                      currency={currency}
+                      isFavorite={favorites.includes(hotel.id)}
+                      onToggleFavorite={handleToggleFavorite}
+                      onSelect={handleSelectHotel}
+                    />
+                  ))}
+                </div>
+              </section>
 
-            {/* Destinations & Travel Guide Section */}
+              {/* Destinations & Travel Guide Section */}
+              <DestinationsGuide
+                lang={lang}
+                onSelectCity={handleSelectCity}
+              />
+            </div>
+          )}
+
+          {/* VIEW: SEARCH RESULTS */}
+          {currentView === 'search' && (
+            <SearchResultsView
+              hotels={hotels}
+              loading={loadingHotels}
+              lang={lang}
+              currency={currency}
+              favorites={favorites}
+              onToggleFavorite={handleToggleFavorite}
+              onSelectHotel={handleSelectHotel}
+              searchFilters={searchFilters}
+              onUpdateFilters={(newFilters) => {
+                const updated = { ...searchFilters, ...newFilters };
+                setSearchFilters(updated);
+                fetchHotels(updated);
+              }}
+              onResetFilters={() => {
+                const emptyFilters = { sortBy: 'popularity' as const };
+                setSearchFilters(emptyFilters);
+                fetchHotels(emptyFilters);
+              }}
+            />
+          )}
+
+          {/* VIEW: HOTEL DETAILS */}
+          {currentView === 'hotel-details' && selectedHotel && (
+            <HotelDetailsView
+              hotel={selectedHotel}
+              allHotels={hotels}
+              lang={lang}
+              currency={currency}
+              isFavorite={favorites.includes(selectedHotel.id)}
+              onToggleFavorite={handleToggleFavorite}
+              onBack={() => handleNavigate('search')}
+              onSelectRoomAndRate={handleSelectRoomAndRate}
+              onSelectSimilarHotel={(h) => setSelectedHotel(h)}
+            />
+          )}
+
+          {/* VIEW: BOOKING CHECKOUT */}
+          {currentView === 'booking' && selectedHotel && selectedRoom && selectedRate && (
+            <BookingCheckoutView
+              hotel={selectedHotel}
+              room={selectedRoom}
+              rate={selectedRate}
+              lang={lang}
+              currency={currency}
+              checkIn={searchFilters.checkIn || '2026-09-10'}
+              checkOut={searchFilters.checkOut || '2026-09-15'}
+              guestsCount={searchFilters.guests || 2}
+              onBack={() => handleNavigate('hotel-details')}
+              onBookingComplete={handleBookingComplete}
+            />
+          )}
+
+          {/* VIEW: BOOKING CONFIRMATION & VOUCHER */}
+          {currentView === 'confirmation' && confirmedBooking && (
+            <BookingConfirmationView
+              booking={confirmedBooking}
+              lang={lang}
+              currency={currency}
+              totalLoyaltyBalance={userProfile.totalPoints ?? userProfile.loyaltyPoints ?? 0}
+              onViewProfile={() => handleNavigate('profile')}
+              onViewMyBookings={() => handleNavigate('my-bookings')}
+              onGoHome={() => handleNavigate('home')}
+            />
+          )}
+
+          {/* VIEW: MY BOOKINGS */}
+          {currentView === 'my-bookings' && (
+            <MyBookingsView
+              bookings={bookings}
+              lang={lang}
+              currency={currency}
+              loyaltyPoints={userProfile.totalPoints ?? userProfile.loyaltyPoints ?? 0}
+              onViewProfile={() => handleNavigate('profile')}
+              onSelectBookingForVoucher={(b) => {
+                setConfirmedBooking(b);
+                handleNavigate('confirmation');
+              }}
+              onCancelBooking={handleCancelBooking}
+              onExploreHotels={() => handleNavigate('search')}
+            />
+          )}
+
+          {/* VIEW: USER PROFILE & LOYALTY */}
+          {currentView === 'profile' && (
+            <UserProfileView
+              profile={userProfile}
+              bookings={bookings}
+              favoritesCount={favorites.length}
+              lang={lang}
+              currency={currency}
+              onUpdateProfile={handleUpdateProfile}
+              onNavigateToBookings={() => handleNavigate('my-bookings')}
+              onNavigateToFavorites={() => handleNavigate('saved')}
+              onExploreHotels={() => handleNavigate('search')}
+            />
+          )}
+
+          {/* VIEW: SAVED FAVORITES */}
+          {currentView === 'saved' && (
+            <SavedFavoritesView
+              favoriteHotels={favoriteHotels}
+              lang={lang}
+              currency={currency}
+              favorites={favorites}
+              onToggleFavorite={handleToggleFavorite}
+              onSelectHotel={handleSelectHotel}
+              onExploreHotels={() => handleNavigate('search')}
+            />
+          )}
+
+          {/* VIEW: DESTINATIONS & GUIDE */}
+          {(currentView === 'destinations' || currentView === 'guide') && (
             <DestinationsGuide
               lang={lang}
-              onSelectCity={handleSelectCity}
+              onSelectCity={(city) => {
+                handleSelectCity(city);
+              }}
             />
-          </div>
-        )}
+          )}
 
-        {/* VIEW: SEARCH RESULTS */}
-        {currentView === 'search' && (
-          <SearchResultsView
-            hotels={hotels}
-            loading={loadingHotels}
-            lang={lang}
-            currency={currency}
-            favorites={favorites}
-            onToggleFavorite={handleToggleFavorite}
-            onSelectHotel={handleSelectHotel}
-            searchFilters={searchFilters}
-            onUpdateFilters={(newFilters) => {
-              const updated = { ...searchFilters, ...newFilters };
-              setSearchFilters(updated);
-              fetchHotels(updated);
-            }}
-            onResetFilters={() => {
-              const emptyFilters = { sortBy: 'popularity' as const };
-              setSearchFilters(emptyFilters);
-              fetchHotels(emptyFilters);
-            }}
-          />
-        )}
-
-        {/* VIEW: HOTEL DETAILS */}
-        {currentView === 'hotel-details' && selectedHotel && (
-          <HotelDetailsView
-            hotel={selectedHotel}
-            allHotels={hotels}
-            lang={lang}
-            currency={currency}
-            isFavorite={favorites.includes(selectedHotel.id)}
-            onToggleFavorite={handleToggleFavorite}
-            onBack={() => handleNavigate('search')}
-            onSelectRoomAndRate={handleSelectRoomAndRate}
-            onSelectSimilarHotel={(h) => setSelectedHotel(h)}
-          />
-        )}
-
-        {/* VIEW: BOOKING CHECKOUT */}
-        {currentView === 'booking' && selectedHotel && selectedRoom && selectedRate && (
-          <BookingCheckoutView
-            hotel={selectedHotel}
-            room={selectedRoom}
-            rate={selectedRate}
-            lang={lang}
-            currency={currency}
-            checkIn={searchFilters.checkIn || '2026-09-10'}
-            checkOut={searchFilters.checkOut || '2026-09-15'}
-            guestsCount={searchFilters.guests || 2}
-            onBack={() => handleNavigate('hotel-details')}
-            onBookingComplete={handleBookingComplete}
-          />
-        )}
-
-        {/* VIEW: BOOKING CONFIRMATION & VOUCHER */}
-        {currentView === 'confirmation' && confirmedBooking && (
-          <BookingConfirmationView
-            booking={confirmedBooking}
-            lang={lang}
-            currency={currency}
-            totalLoyaltyBalance={userProfile.totalPoints ?? userProfile.loyaltyPoints ?? 0}
-            onViewProfile={() => handleNavigate('profile')}
-            onViewMyBookings={() => handleNavigate('my-bookings')}
-            onGoHome={() => handleNavigate('home')}
-          />
-        )}
-
-        {/* VIEW: MY BOOKINGS */}
-        {currentView === 'my-bookings' && (
-          <MyBookingsView
-            bookings={bookings}
-            lang={lang}
-            currency={currency}
-            loyaltyPoints={userProfile.totalPoints ?? userProfile.loyaltyPoints ?? 0}
-            onViewProfile={() => handleNavigate('profile')}
-            onSelectBookingForVoucher={(b) => {
-              setConfirmedBooking(b);
-              handleNavigate('confirmation');
-            }}
-            onCancelBooking={handleCancelBooking}
-            onExploreHotels={() => handleNavigate('search')}
-          />
-        )}
-
-        {/* VIEW: USER PROFILE & LOYALTY */}
-        {currentView === 'profile' && (
-          <UserProfileView
-            profile={userProfile}
-            bookings={bookings}
-            favoritesCount={favorites.length}
-            lang={lang}
-            currency={currency}
-            onUpdateProfile={handleUpdateProfile}
-            onNavigateToBookings={() => handleNavigate('my-bookings')}
-            onNavigateToFavorites={() => handleNavigate('saved')}
-            onExploreHotels={() => handleNavigate('search')}
-          />
-        )}
-
-        {/* VIEW: SAVED FAVORITES */}
-        {currentView === 'saved' && (
-          <SavedFavoritesView
-            favoriteHotels={favoriteHotels}
-            lang={lang}
-            currency={currency}
-            favorites={favorites}
-            onToggleFavorite={handleToggleFavorite}
-            onSelectHotel={handleSelectHotel}
-            onExploreHotels={() => handleNavigate('search')}
-          />
-        )}
-
-        {/* VIEW: DESTINATIONS & GUIDE */}
-        {(currentView === 'destinations' || currentView === 'guide') && (
-          <DestinationsGuide
-            lang={lang}
-            onSelectCity={(city) => {
-              handleSelectCity(city);
-            }}
-          />
-        )}
-
-        {/* VIEW: ADMIN PORTAL */}
-        {currentView === 'admin' && (
-          <AdminPortalView
-            lang={lang}
-            currency={currency}
-            onExitAdmin={() => handleNavigate('home')}
-          />
-        )}
-      </div>
+          {/* VIEW: ADMIN PORTAL */}
+          {currentView === 'admin' && (
+            <AdminPortalView
+              lang={lang}
+              currency={currency}
+              onExitAdmin={() => handleNavigate('home')}
+            />
+          )}
+        </Suspense>
+      </main>
 
       {/* Global Footer */}
       <Footer
@@ -785,12 +857,14 @@ export default function App() {
       />
 
       {/* Unified Security & Auth Modal */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        lang={lang}
-        onAuthSuccess={handleAuthSuccess}
-      />
+      <Suspense fallback={null}>
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          lang={lang}
+          onAuthSuccess={handleAuthSuccess}
+        />
+      </Suspense>
     </div>
   );
 }
