@@ -159,6 +159,8 @@ export interface Booking {
   hotelNameAr: string;
   hotelCity: string;
   hotelCityAr: string;
+  hotelAddressEn?: string;
+  hotelAddressAr?: string;
   hotelImage: string;
   roomId: string;
   roomNameEn: string;

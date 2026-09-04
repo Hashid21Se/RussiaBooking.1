@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   CheckCircle2, 
   Printer, 
@@ -13,11 +13,14 @@ import {
   ArrowRight,
   Briefcase,
   Share2,
-  Sparkles
+  Sparkles,
+  Loader2,
+  Check
 } from 'lucide-react';
 import { Booking, SupportedCurrency } from '../types';
 import { Language, translations } from '../lib/i18n';
 import { CurrencyService } from '../lib/currency';
+import { downloadBookingVoucherPdf } from '../lib/pdfVoucherGenerator';
 
 interface BookingConfirmationViewProps {
   booking: Booking;
@@ -38,10 +41,27 @@ export const BookingConfirmationView: React.FC<BookingConfirmationViewProps> = (
   onViewProfile,
   totalLoyaltyBalance,
 }) => {
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
   const t = translations[lang];
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleDownloadPdf = async () => {
+    setIsDownloadingPdf(true);
+    try {
+      const success = await downloadBookingVoucherPdf(booking, lang, currency);
+      if (success) {
+        setDownloadSuccess(true);
+        setTimeout(() => setDownloadSuccess(false), 5000);
+      }
+    } catch (err) {
+      console.error('PDF download error:', err);
+    } finally {
+      setIsDownloadingPdf(false);
+    }
   };
 
   return (
@@ -240,6 +260,26 @@ export const BookingConfirmationView: React.FC<BookingConfirmationViewProps> = (
         </div>
       </div>
 
+      {/* Download Success Notice */}
+      {downloadSuccess && (
+        <div className="flex items-center justify-between p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-900 dark:text-emerald-200 shadow-sm print:hidden">
+          <div className="flex items-center gap-3">
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-600 text-white shrink-0">
+              <Check className="w-4 h-4" />
+            </span>
+            <div>
+              <span className="font-bold block">
+                {lang === 'ar' ? 'تم تحميل ملف PDF بنجاح!' : 'PDF Downloaded Successfully!'}
+              </span>
+              <span className="text-[11px] text-emerald-700 dark:text-emerald-300">
+                {t.voucher.downloadSuccess}
+              </span>
+            </div>
+          </div>
+          <button onClick={() => setDownloadSuccess(false)} className="text-slate-400 hover:text-slate-600 px-2 py-1">✕</button>
+        </div>
+      )}
+
       {/* Action Buttons */}
       <div className="flex flex-wrap items-center justify-between gap-4 print:hidden">
         <button
@@ -250,13 +290,32 @@ export const BookingConfirmationView: React.FC<BookingConfirmationViewProps> = (
           <span>{lang === 'ar' ? 'العودة للرئيسية' : 'Return to Home'}</span>
         </button>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            id="download-pdf-voucher-btn"
+            onClick={handleDownloadPdf}
+            disabled={isDownloadingPdf}
+            className="flex items-center gap-2 rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40 px-4 py-2.5 text-xs font-bold text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition shadow-sm disabled:opacity-60 cursor-pointer"
+          >
+            {isDownloadingPdf ? (
+              <>
+                <Loader2 className="w-4 h-4 text-amber-600 animate-spin" />
+                <span>{t.voucher.downloadingPdf}</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <span>{t.voucher.downloadPdf}</span>
+              </>
+            )}
+          </button>
+
           <button
             id="print-voucher-btn"
             onClick={handlePrint}
             className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-sm"
           >
-            <Printer className="w-4 h-4 text-amber-500" />
+            <Printer className="w-4 h-4 text-slate-500" />
             <span>{t.voucher.printVoucher}</span>
           </button>
 
