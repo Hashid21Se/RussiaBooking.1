@@ -1,3 +1,17 @@
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
+import { Header } from './components/Header';
+import { HeroSearch } from './components/HeroSearch';
+// Lazy-load heavier views to reduce initial bundle
+const DestinationsGuide = lazy(() => import('./components/DestinationsGuide'));
+const SearchResultsView = lazy(() => import('./components/SearchResultsView'));
+const HotelDetailsView = lazy(() => import('./components/HotelDetailsView'));
+const BookingCheckoutView = lazy(() => import('./components/BookingCheckoutView'));
+const BookingConfirmationView = lazy(() => import('./components/BookingConfirmationView'));
+const MyBookingsView = lazy(() => import('./components/MyBookingsView'));
+const SavedFavoritesView = lazy(() => import('./components/SavedFavoritesView'));
+const AdminPortalView = lazy(() => import('./components/AdminPortalView'));
+const UserProfileView = lazy(() => import('./components/UserProfileView'));
+
 /**
  * RussiaBooking - Main Application Component
  * Production-Ready Full-Stack SaaS & PWA Experience
@@ -15,7 +29,6 @@ import { MyBookingsView } from './components/MyBookingsView';
 import { SavedFavoritesView } from './components/SavedFavoritesView';
 import { AdminPortalView } from './components/AdminPortalView';
 import { UserProfileView } from './components/UserProfileView';
-import { Footer } from './components/Footer';
 import { Language, translations } from './lib/i18n';
 import { Hotel, HotelRoom, RoomRate, SearchFilters, SupportedCurrency, Booking, UserProfile } from './types';
 import { SEED_HOTELS } from './server/seedData';
@@ -26,9 +39,9 @@ const INITIAL_BOOKINGS: Booking[] = [
   {
     id: 'book-init-1',
     bookingCode: 'RB-2026-101',
-    userId: 'user-hashed-1',
-    userEmail: 'hashedalrajhi@gmail.com',
-    userPhone: '+966501234567',
+    userId: 'demo-user-1',
+    userEmail: 'demo@example.com',
+    userPhone: '+0000000000',
     hotelId: 'moscow-four-seasons',
     hotelNameEn: 'Four Seasons Hotel Moscow',
     hotelNameAr: 'فندق فور سيزونز موسكو',
@@ -46,8 +59,8 @@ const INITIAL_BOOKINGS: Booking[] = [
     nightsCount: 4,
     guestsCount: 2,
     guests: [
-      { fullName: 'سعد بن خالد الراجحي', nationality: 'Saudi Arabia', isPrimary: true, passportNumber: 'N12345678' },
-      { fullName: 'ضيف مرافق', nationality: 'Saudi Arabia', isPrimary: false }
+      { fullName: 'Demo Primary Guest', nationality: 'Demo', isPrimary: true, passportNumber: 'P0000000' },
+      { fullName: 'Demo Companion', nationality: 'Demo', isPrimary: false }
     ],
     pricePerNightRub: 43500,
     subtotalRub: 174000,
@@ -175,13 +188,13 @@ export default function App() {
   });
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
     const defaultProfile: UserProfile = {
-      id: 'user-hashed-1',
-      name: 'سعد بن خالد الراجحي',
-      email: 'hashedalrajhi@gmail.com',
-      phone: '+966 50 123 4567',
-      nationality: 'Saudi Arabia',
-      passportNumber: 'N12345678',
-      country: 'المملكة العربية السعودية',
+      id: 'demo-user-1',
+      name: 'Demo User',
+      email: 'demo@example.com',
+      phone: '+0000000000',
+      nationality: 'Demo',
+      passportNumber: 'P0000000',
+      country: 'Demo Country',
       tier: 'GOLD',
       loyaltyTier: 'GOLD',
       totalPoints: 7048,
@@ -489,7 +502,7 @@ export default function App() {
     <div className="min-h-screen flex flex-col bg-[#F8F9FA] text-[#1A1A1A] dark:bg-[#0F141C] dark:text-white font-sans transition-colors">
       {/* Toast Notification */}
       {toastMsg && (
-        <div className="fixed top-20 start-1/2 -translate-x-1/2 z-50 rounded-2xl bg-[#111827] text-white dark:bg-white dark:text-[#111827] px-5 py-3 text-xs sm:text-sm font-bold shadow-2xl backdrop-blur-md border border-gray-200 dark:border-slate-700 flex items-center gap-2 animate-bounce">
+        <div className="fixed top-20 start-1/2 -translate-x-1/2 z-50 rounded-2xl bg-[#111827] text-white dark:bg-white dark:text-[#111827] px-5 py-3 text-xs sm:text-sm font-bold shadow-2xl backdr[...]
           <Sparkles className="w-4 h-4 text-[#E11D48]" />
           <span>{toastMsg}</span>
         </div>
@@ -517,192 +530,194 @@ export default function App() {
         }}
       />
 
-      {/* Main Content Render Area */}
+      {/* Main Content Render Area (lazy-loaded views wrapped in Suspense) */}
       <div className="flex-1">
-        {/* VIEW: HOME */}
-        {currentView === 'home' && (
-          <div>
-            <HeroSearch
-              lang={lang}
-              onSearch={handleSearch}
-              onSelectCity={handleSelectCity}
-            />
+        <Suspense fallback={<div aria-live="polite" className="p-8 text-center">...جاري التحميل / Loading…</div>}>
+          {/* VIEW: HOME */}
+          {currentView === 'home' && (
+            <div>
+              <HeroSearch
+                lang={lang}
+                onSearch={handleSearch}
+                onSelectCity={handleSelectCity}
+              />
 
-            {/* Featured Luxury Hotels Section */}
-            <section className="mx-auto max-w-7xl px-4 sm:px-6 py-10 md:py-12">
-              <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-6">
-                <div>
-                  <div className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#9CA3AF] dark:text-slate-400 mb-1">
-                    <Sparkles className="w-3.5 h-3.5 text-[#E11D48]" />
-                    <span>{lang === 'ar' ? 'فنادق مختارة حصرياً' : 'Handpicked for GCC Travelers'}</span>
+              {/* Featured Luxury Hotels Section */}
+              <section className="mx-auto max-w-7xl px-4 sm:px-6 py-10 md:py-12">
+                <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-6">
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#9CA3AF] dark:text-slate-400 mb-1">
+                      <Sparkles className="w-3.5 h-3.5 text-[#E11D48]" />
+                      <span>{lang === 'ar' ? 'فنادق مختارة حصرياً' : 'Handpicked for GCC Travelers'}</span>
+                    </div>
+                    <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#111827] dark:text-white">
+                      {lang === 'ar' ? 'أفخم الفنادق والمنتجعات الموصى بها في روسيا' : 'Top Luxury Stays in Russia'}
+                    </h2>
                   </div>
-                  <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#111827] dark:text-white">
-                    {lang === 'ar' ? 'أفخم الفنادق والمنتجعات الموصى بها في روسيا' : 'Top Luxury Stays in Russia'}
-                  </h2>
+                  <button
+                    onClick={() => handleNavigate('search')}
+                    className="text-xs sm:text-sm font-semibold text-[#E11D48] underline underline-offset-4 hover:opacity-85 flex items-center gap-1 self-start sm:self-auto transition"
+                  >
+                    <span>{lang === 'ar' ? 'تصفح كل الفنادق' : 'View all hotels'}</span>
+                    {lang === 'ar' ? <ArrowLeft className="w-3.5 h-3.5" /> : <ArrowRight className="w-3.5 h-3.5" />}
+                  </button>
                 </div>
-                <button
-                  onClick={() => handleNavigate('search')}
-                  className="text-xs sm:text-sm font-semibold text-[#E11D48] underline underline-offset-4 hover:opacity-85 flex items-center gap-1 self-start sm:self-auto transition"
-                >
-                  <span>{lang === 'ar' ? 'تصفح كل الفنادق' : 'View all hotels'}</span>
-                  {lang === 'ar' ? <ArrowLeft className="w-3.5 h-3.5" /> : <ArrowRight className="w-3.5 h-3.5" />}
-                </button>
-              </div>
 
-              <div className="space-y-4">
-                {(featuredHotels.length > 0 ? featuredHotels : hotels.slice(0, 3)).map((hotel) => (
-                  <HotelCard
-                    key={hotel.id}
-                    hotel={hotel}
-                    lang={lang}
-                    currency={currency}
-                    isFavorite={favorites.includes(hotel.id)}
-                    onToggleFavorite={handleToggleFavorite}
-                    onSelect={handleSelectHotel}
-                  />
-                ))}
-              </div>
-            </section>
+                <div className="space-y-4">
+                  {(featuredHotels.length > 0 ? featuredHotels : hotels.slice(0, 3)).map((hotel) => (
+                    <HotelCard
+                      key={hotel.id}
+                      hotel={hotel}
+                      lang={lang}
+                      currency={currency}
+                      isFavorite={favorites.includes(hotel.id)}
+                      onToggleFavorite={handleToggleFavorite}
+                      onSelect={handleSelectHotel}
+                    />
+                  ))}
+                </div>
+              </section>
 
-            {/* Destinations & Travel Guide Section */}
+              {/* Destinations & Travel Guide Section */}
+              <DestinationsGuide
+                lang={lang}
+                onSelectCity={handleSelectCity}
+              />
+            </div>
+          )}
+
+          {/* VIEW: SEARCH RESULTS */}
+          {currentView === 'search' && (
+            <SearchResultsView
+              hotels={hotels}
+              loading={loadingHotels}
+              lang={lang}
+              currency={currency}
+              favorites={favorites}
+              onToggleFavorite={handleToggleFavorite}
+              onSelectHotel={handleSelectHotel}
+              searchFilters={searchFilters}
+              onUpdateFilters={(newFilters) => {
+                const updated = { ...searchFilters, ...newFilters };
+                setSearchFilters(updated);
+                fetchHotels(updated);
+              }}
+              onResetFilters={() => {
+                const emptyFilters = { sortBy: 'popularity' as const };
+                setSearchFilters(emptyFilters);
+                fetchHotels(emptyFilters);
+              }}
+            />
+          )}
+
+          {/* VIEW: HOTEL DETAILS */}
+          {currentView === 'hotel-details' && selectedHotel && (
+            <HotelDetailsView
+              hotel={selectedHotel}
+              allHotels={hotels}
+              lang={lang}
+              currency={currency}
+              isFavorite={favorites.includes(selectedHotel.id)}
+              onToggleFavorite={handleToggleFavorite}
+              onBack={() => handleNavigate('search')}
+              onSelectRoomAndRate={handleSelectRoomAndRate}
+              onSelectSimilarHotel={(h) => setSelectedHotel(h)}
+            />
+          )}
+
+          {/* VIEW: BOOKING CHECKOUT */}
+          {currentView === 'booking' && selectedHotel && selectedRoom && selectedRate && (
+            <BookingCheckoutView
+              hotel={selectedHotel}
+              room={selectedRoom}
+              rate={selectedRate}
+              lang={lang}
+              currency={currency}
+              checkIn={searchFilters.checkIn || '2026-09-10'}
+              checkOut={searchFilters.checkOut || '2026-09-15'}
+              guestsCount={searchFilters.guests || 2}
+              onBack={() => handleNavigate('hotel-details')}
+              onBookingComplete={handleBookingComplete}
+            />
+          )}
+
+          {/* VIEW: BOOKING CONFIRMATION & VOUCHER */}
+          {currentView === 'confirmation' && confirmedBooking && (
+            <BookingConfirmationView
+              booking={confirmedBooking}
+              lang={lang}
+              currency={currency}
+              totalLoyaltyBalance={userProfile.totalPoints ?? userProfile.loyaltyPoints ?? 0}
+              onViewProfile={() => handleNavigate('profile')}
+              onViewMyBookings={() => handleNavigate('my-bookings')}
+              onGoHome={() => handleNavigate('home')}
+            />
+          )}
+
+          {/* VIEW: MY BOOKINGS */}
+          {currentView === 'my-bookings' && (
+            <MyBookingsView
+              bookings={bookings}
+              lang={lang}
+              currency={currency}
+              loyaltyPoints={userProfile.totalPoints ?? userProfile.loyaltyPoints ?? 0}
+              onViewProfile={() => handleNavigate('profile')}
+              onSelectBookingForVoucher={(b) => {
+                setConfirmedBooking(b);
+                handleNavigate('confirmation');
+              }}
+              onCancelBooking={handleCancelBooking}
+              onExploreHotels={() => handleNavigate('search')}
+            />
+          )}
+
+          {/* VIEW: USER PROFILE & LOYALTY */}
+          {currentView === 'profile' && (
+            <UserProfileView
+              profile={userProfile}
+              bookings={bookings}
+              favoritesCount={favorites.length}
+              lang={lang}
+              currency={currency}
+              onUpdateProfile={handleUpdateProfile}
+              onNavigateToBookings={() => handleNavigate('my-bookings')}
+              onNavigateToFavorites={() => handleNavigate('saved')}
+              onExploreHotels={() => handleNavigate('search')}
+            />
+          )}
+
+          {/* VIEW: SAVED FAVORITES */}
+          {currentView === 'saved' && (
+            <SavedFavoritesView
+              favoriteHotels={favoriteHotels}
+              lang={lang}
+              currency={currency}
+              favorites={favorites}
+              onToggleFavorite={handleToggleFavorite}
+              onSelectHotel={handleSelectHotel}
+              onExploreHotels={() => handleNavigate('search')}
+            />
+          )}
+
+          {/* VIEW: DESTINATIONS & GUIDE */}
+          {(currentView === 'destinations' || currentView === 'guide') && (
             <DestinationsGuide
               lang={lang}
-              onSelectCity={handleSelectCity}
+              onSelectCity={(city) => {
+                handleSelectCity(city);
+              }}
             />
-          </div>
-        )}
+          )}
 
-        {/* VIEW: SEARCH RESULTS */}
-        {currentView === 'search' && (
-          <SearchResultsView
-            hotels={hotels}
-            loading={loadingHotels}
-            lang={lang}
-            currency={currency}
-            favorites={favorites}
-            onToggleFavorite={handleToggleFavorite}
-            onSelectHotel={handleSelectHotel}
-            searchFilters={searchFilters}
-            onUpdateFilters={(newFilters) => {
-              const updated = { ...searchFilters, ...newFilters };
-              setSearchFilters(updated);
-              fetchHotels(updated);
-            }}
-            onResetFilters={() => {
-              const emptyFilters = { sortBy: 'popularity' as const };
-              setSearchFilters(emptyFilters);
-              fetchHotels(emptyFilters);
-            }}
-          />
-        )}
-
-        {/* VIEW: HOTEL DETAILS */}
-        {currentView === 'hotel-details' && selectedHotel && (
-          <HotelDetailsView
-            hotel={selectedHotel}
-            allHotels={hotels}
-            lang={lang}
-            currency={currency}
-            isFavorite={favorites.includes(selectedHotel.id)}
-            onToggleFavorite={handleToggleFavorite}
-            onBack={() => handleNavigate('search')}
-            onSelectRoomAndRate={handleSelectRoomAndRate}
-            onSelectSimilarHotel={(h) => setSelectedHotel(h)}
-          />
-        )}
-
-        {/* VIEW: BOOKING CHECKOUT */}
-        {currentView === 'booking' && selectedHotel && selectedRoom && selectedRate && (
-          <BookingCheckoutView
-            hotel={selectedHotel}
-            room={selectedRoom}
-            rate={selectedRate}
-            lang={lang}
-            currency={currency}
-            checkIn={searchFilters.checkIn || '2026-09-10'}
-            checkOut={searchFilters.checkOut || '2026-09-15'}
-            guestsCount={searchFilters.guests || 2}
-            onBack={() => handleNavigate('hotel-details')}
-            onBookingComplete={handleBookingComplete}
-          />
-        )}
-
-        {/* VIEW: BOOKING CONFIRMATION & VOUCHER */}
-        {currentView === 'confirmation' && confirmedBooking && (
-          <BookingConfirmationView
-            booking={confirmedBooking}
-            lang={lang}
-            currency={currency}
-            totalLoyaltyBalance={userProfile.totalPoints ?? userProfile.loyaltyPoints ?? 0}
-            onViewProfile={() => handleNavigate('profile')}
-            onViewMyBookings={() => handleNavigate('my-bookings')}
-            onGoHome={() => handleNavigate('home')}
-          />
-        )}
-
-        {/* VIEW: MY BOOKINGS */}
-        {currentView === 'my-bookings' && (
-          <MyBookingsView
-            bookings={bookings}
-            lang={lang}
-            currency={currency}
-            loyaltyPoints={userProfile.totalPoints ?? userProfile.loyaltyPoints ?? 0}
-            onViewProfile={() => handleNavigate('profile')}
-            onSelectBookingForVoucher={(b) => {
-              setConfirmedBooking(b);
-              handleNavigate('confirmation');
-            }}
-            onCancelBooking={handleCancelBooking}
-            onExploreHotels={() => handleNavigate('search')}
-          />
-        )}
-
-        {/* VIEW: USER PROFILE & LOYALTY */}
-        {currentView === 'profile' && (
-          <UserProfileView
-            profile={userProfile}
-            bookings={bookings}
-            favoritesCount={favorites.length}
-            lang={lang}
-            currency={currency}
-            onUpdateProfile={handleUpdateProfile}
-            onNavigateToBookings={() => handleNavigate('my-bookings')}
-            onNavigateToFavorites={() => handleNavigate('saved')}
-            onExploreHotels={() => handleNavigate('search')}
-          />
-        )}
-
-        {/* VIEW: SAVED FAVORITES */}
-        {currentView === 'saved' && (
-          <SavedFavoritesView
-            favoriteHotels={favoriteHotels}
-            lang={lang}
-            currency={currency}
-            favorites={favorites}
-            onToggleFavorite={handleToggleFavorite}
-            onSelectHotel={handleSelectHotel}
-            onExploreHotels={() => handleNavigate('search')}
-          />
-        )}
-
-        {/* VIEW: DESTINATIONS & GUIDE */}
-        {(currentView === 'destinations' || currentView === 'guide') && (
-          <DestinationsGuide
-            lang={lang}
-            onSelectCity={(city) => {
-              handleSelectCity(city);
-            }}
-          />
-        )}
-
-        {/* VIEW: ADMIN PORTAL */}
-        {currentView === 'admin' && (
-          <AdminPortalView
-            lang={lang}
-            currency={currency}
-            onExitAdmin={() => handleNavigate('home')}
-          />
-        )}
+          {/* VIEW: ADMIN PORTAL */}
+          {currentView === 'admin' && (
+            <AdminPortalView
+              lang={lang}
+              currency={currency}
+              onExitAdmin={() => handleNavigate('home')}
+            />
+          )}
+        </Suspense>
       </div>
 
       {/* Global Footer */}
