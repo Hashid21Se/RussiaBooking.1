@@ -1,0 +1,6 @@
+{
+  "name": "RussiaBooking",
+  "description": "Production-ready hotel booking platform connecting Middle Eastern and Gulf travelers with verified hotels across Russia with Arabic/English support, Ruble & SAR pricing, and secure payment processing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
