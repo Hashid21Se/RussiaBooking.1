@@ -1,0 +1,27 @@
+# ==============================================================================
+# Prometheus Scrape Configuration for RussiaBooking Service
+# ==============================================================================
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - 'alert.rules.yml'
+
+scrape_configs:
+  # RussiaBooking Main App
+  - job_name: 'russiabooking-app'
+    metrics_path: '/api/metrics'
+    static_configs:
+      - targets: ['app:3000']
+    scrape_interval: 10s
+
+  # PostgreSQL Exporter (Internal DB metrics)
+  - job_name: 'postgresql'
+    static_configs:
+      - targets: ['postgres:5432']
+
+  # Redis Exporter
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']

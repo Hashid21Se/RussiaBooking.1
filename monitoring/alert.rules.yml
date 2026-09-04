@@ -1,0 +1,46 @@
+# ==============================================================================
+# Prometheus Alerting Rules for RussiaBooking Platform
+# ==============================================================================
+groups:
+  - name: russiabooking_critical_alerts
+    rules:
+      # 1. API Downtime Alert
+      - alert: ServiceDown
+        expr: up{job="russiabooking-app"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RussiaBooking Main App is down"
+          description: "Instance {{ $labels.instance }} has been unreachable for more than 1 minute."
+
+      # 2. Payment Failure Spike Alert (Immediate Alerting)
+      - alert: HighPaymentFailureRate
+        expr: (rate(payment_failures_total[5m]) / (rate(payment_attempts_total[5m]) + 0.001)) * 100 > 5
+        for: 2m
+        labels:
+          severity: page
+          channel: pagerduty-payments
+        annotations:
+          summary: "Payment Failure Rate exceeds 5%"
+          description: "Immediate action required: Mada / Tamara / Tap payment gateway failures are spiking above 5% threshold in the last 5 minutes."
+
+      # 3. High Latency (P95 > 300ms)
+      - alert: HighApiLatency
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 0.3
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "API Latency 95th percentile exceeded 300ms"
+          description: "P95 latency is {{ $value }}s across all core endpoints."
+
+      # 4. High HTTP 5xx Error Rate
+      - alert: High5xxErrorRate
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) * 100 > 1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "5xx server errors greater than 1%"
+          description: "Production API experiencing high server error rate: {{ $value }}%."

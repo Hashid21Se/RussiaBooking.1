@@ -1,0 +1,89 @@
+{
+  "expo": {
+    "name": "RussiaBooking",
+    "slug": "russiabooking",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0F141C"
+    },
+    "scheme": "russiabooking",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.russiabooking.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "نستخدم Face ID لتسجيل دخولك السريع وحماية حجوزاتك وبيانات سفرك الخاصة بأمان عالي.",
+        "NSCameraUsageDescription": "نستخدم الكاميرا لمسح بطاقات الهوية وجوازات السفر لتسريع تعبئة بيانات النزلاء.",
+        "UIBackgroundModes": ["remote-notification", "fetch"]
+      },
+      "associatedDomains": [
+        "applinks:russiabooking.com",
+        "applinks:www.russiabooking.com"
+      ]
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0F141C"
+      },
+      "package": "com.russiabooking.app",
+      "versionCode": 1,
+      "permissions": [
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "russiabooking.com",
+              "pathPrefix": "/booking"
+            },
+            {
+              "scheme": "russiabooking"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
+    },
+    "plugins": [
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "نستخدم Face ID للسماح لك بالوصول السريع إلى حجوزاتك وقسائم الفنادق المحفوظة."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#E11D48",
+          "sounds": ["./assets/booking_confirmed.wav"]
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+      },
+      "apiBaseUrl": "https://russiabooking.com/api"
+    }
+  }
+}
