@@ -108,6 +108,17 @@ class RedisManager {
     }
   }
 
+  public async keys(pattern: string): Promise<string[]> {
+    const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
+    const matched: string[] = [];
+    for (const key of this.cache.keys()) {
+      if (regex.test(key)) {
+        matched.push(key);
+      }
+    }
+    return matched;
+  }
+
   // ===================== RATE LIMITING =====================
   /**
    * Sliding window rate limiter

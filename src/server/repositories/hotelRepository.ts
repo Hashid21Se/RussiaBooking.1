@@ -162,6 +162,85 @@ export class HotelRepository {
 
     return { room, rate };
   }
+
+  /**
+   * Atomic Inventory Lock & Allotment Decrement (Prevents Overbooking)
+   */
+  public async atomicHoldInventory(hotelId: string, roomId: string, rateId: string, quantity: number = 1): Promise<boolean> {
+    const hotel = this.hotels.get(hotelId);
+    if (!hotel) return false;
+
+    const room = hotel.rooms.find(r => r.id === roomId);
+    if (!room) return false;
+
+    const rate = room.rates.find(r => r.id === rateId);
+    if (!rate) return false;
+
+    // Strict check: Is inventory available?
+    if (rate.availableQuantity < quantity) {
+      return false; // Overbooking prevented!
+    }
+
+    // Atomic decrement
+    rate.availableQuantity -= quantity;
+    await redisClient.del(`hotel:detail:${hotelId}`);
+    return true;
+  }
+
+  /**
+   * Replenish / Release Allotment back to inventory upon cancellation or hold expiration
+   */
+  public async replenishInventory(hotelId: string, roomId: string, rateId: string, quantity: number = 1): Promise<boolean> {
+    const hotel = this.hotels.get(hotelId);
+    if (!hotel) return false;
+
+    const room = hotel.rooms.find(r => r.id === roomId);
+    if (!room) return false;
+
+    const rate = room.rates.find(r => r.id === rateId);
+    if (!rate) return false;
+
+    rate.availableQuantity += quantity;
+    await redisClient.del(`hotel:detail:${hotelId}`);
+    return true;
+  }
+
+  /**
+   * Channel Manager: Update Room Inventory & Rates
+   */
+  public async updateRoomRate(hotelId: string, roomId: string, rateId: string, updates: Partial<RoomRate>): Promise<RoomRate | null> {
+    const hotel = this.hotels.get(hotelId);
+    if (!hotel) return null;
+
+    const room = hotel.rooms.find(r => r.id === roomId);
+    if (!room) return null;
+
+    const rateIndex = room.rates.findIndex(r => r.id === rateId);
+    if (rateIndex === -1) return null;
+
+    room.rates[rateIndex] = { ...room.rates[rateIndex], ...updates };
+    await redisClient.del(`hotel:detail:${hotelId}`);
+    await redisClient.delPattern('search:');
+    return room.rates[rateIndex];
+  }
+
+  /**
+   * Channel Manager: Toggle Stop-Sell
+   */
+  public async toggleStopSell(hotelId: string, roomId: string, rateId: string, stopSell: boolean): Promise<boolean> {
+    const hotel = this.hotels.get(hotelId);
+    if (!hotel) return false;
+
+    const room = hotel.rooms.find(r => r.id === roomId);
+    if (!room) return false;
+
+    const rate = room.rates.find(r => r.id === rateId);
+    if (!rate) return false;
+
+    rate.availableQuantity = stopSell ? 0 : Math.max(1, rate.availableQuantity);
+    await redisClient.del(`hotel:detail:${hotelId}`);
+    return true;
+  }
 }
 
 export const hotelRepository = new HotelRepository();

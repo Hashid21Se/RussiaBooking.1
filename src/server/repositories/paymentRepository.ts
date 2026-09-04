@@ -27,6 +27,24 @@ export class PaymentRepository {
     return tx;
   }
 
+  public async findAllTransactions(): Promise<PaymentTransaction[]> {
+    return Array.from(this.transactions.values()).sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }
+
+  public async deleteTransaction(id: string): Promise<boolean> {
+    const tx = this.transactions.get(id);
+    if (!tx) return false;
+    this.idempotencyStore.delete(tx.idempotencyKey);
+    return this.transactions.delete(id);
+  }
+
+  public async resetTransactions(): Promise<void> {
+    this.transactions.clear();
+    this.idempotencyStore.clear();
+  }
+
   public async updateStatus(id: string, status: PaymentStatus): Promise<PaymentTransaction | null> {
     const tx = this.transactions.get(id);
     if (!tx) return null;

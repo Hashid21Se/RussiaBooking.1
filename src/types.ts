@@ -179,7 +179,8 @@ export type PaymentStatus =
   | 'AUTHORIZED' 
   | 'CAPTURED' 
   | 'FAILED' 
-  | 'REFUNDED';
+  | 'REFUNDED'
+  | 'PARTIALLY_REFUNDED';
 
 export interface BookingGuest {
   id?: string;
@@ -236,6 +237,9 @@ export interface Booking {
   cancelledAt?: string;
   cancellationReason?: string;
   refundAmountRub?: number;
+  refundAmountTargetCurrency?: number;
+  refundId?: string;
+  refundedAt?: string;
 }
 
 export interface PaymentTransaction {
@@ -356,6 +360,8 @@ export interface UserProfile {
   name: string;
   email: string;
   phone: string;
+  preferredLanguage?: 'ar' | 'en' | 'ru';
+  preferredContactChannel?: 'whatsapp' | 'sms' | 'email';
   nationality: string;
   passportNumber?: string;
   country: string;

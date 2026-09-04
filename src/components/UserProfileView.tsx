@@ -58,6 +58,8 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   const [name, setName] = useState(profile.name);
   const [email, setEmail] = useState(profile.email);
   const [phone, setPhone] = useState(profile.phone);
+  const [preferredLanguage, setPreferredLanguage] = useState<'ar' | 'en' | 'ru'>(profile.preferredLanguage || lang);
+  const [preferredContactChannel, setPreferredContactChannel] = useState<'whatsapp' | 'sms' | 'email'>(profile.preferredContactChannel || 'whatsapp');
   const [nationality, setNationality] = useState(profile.nationality);
   const [passportNumber, setPassportNumber] = useState(profile.passportNumber || '');
   const [country, setCountry] = useState(profile.country);
@@ -73,6 +75,8 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
     setName(profile.name);
     setEmail(profile.email);
     setPhone(profile.phone);
+    setPreferredLanguage(profile.preferredLanguage || lang);
+    setPreferredContactChannel(profile.preferredContactChannel || 'whatsapp');
     setNationality(profile.nationality);
     setPassportNumber(profile.passportNumber || '');
     setCountry(profile.country);
@@ -82,7 +86,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
       setArabicSupport(profile.preferences.arabicSupport ?? true);
       setAutoVisaVoucher(profile.preferences.autoVisaVoucher ?? true);
     }
-  }, [profile]);
+  }, [profile, lang]);
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -97,6 +101,8 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         name,
         email,
         phone,
+        preferredLanguage,
+        preferredContactChannel,
         nationality,
         passportNumber,
         country,
@@ -264,18 +270,117 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold font-sans text-slate-700 dark:text-slate-300 mb-1.5">
-                    {t.profile.phone}
+                  <label className="block text-xs font-semibold font-sans text-slate-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <Phone className="w-3.5 h-3.5 text-slate-400" />
+                      {t.profile.phone}
+                    </span>
+                    <span className="text-[10px] font-sans text-slate-400">
+                      {lang === 'ar' ? 'معتمد للواتساب وتأكيد الحجز' : 'Used for WhatsApp & confirmation'}
+                    </span>
                   </label>
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+966 50 123 4567"
                     className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-xs font-numeric text-slate-900 dark:text-white focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
                     required
                   />
                 </div>
 
+                <div>
+                  <label className="block text-xs font-semibold font-sans text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5 text-slate-400" />
+                    <span>{lang === 'ar' ? 'لغة التواصل المفضلة' : 'Preferred Language'}</span>
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPreferredLanguage('ar')}
+                      className={`px-3 py-2 rounded-xl text-xs font-bold font-sans border transition ${
+                        preferredLanguage === 'ar'
+                          ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-500 text-rose-600 dark:text-rose-400'
+                          : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      العربية
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPreferredLanguage('en')}
+                      className={`px-3 py-2 rounded-xl text-xs font-bold font-sans border transition ${
+                        preferredLanguage === 'en'
+                          ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-500 text-rose-600 dark:text-rose-400'
+                          : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      English
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPreferredLanguage('ru')}
+                      className={`px-3 py-2 rounded-xl text-xs font-bold font-sans border transition ${
+                        preferredLanguage === 'ru'
+                          ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-500 text-rose-600 dark:text-rose-400'
+                          : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      Русский
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Notification & Communication Channel Preference */}
+              <div>
+                <label className="block text-xs font-semibold font-sans text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
+                  <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
+                  <span>{lang === 'ar' ? 'قناة استلام الفاوتشر والإشعارات' : 'Preferred Voucher Delivery Channel'}</span>
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setPreferredContactChannel('whatsapp')}
+                    className={`flex items-center gap-2 p-2.5 rounded-xl border text-xs font-medium font-sans text-start transition ${
+                      preferredContactChannel === 'whatsapp'
+                        ? 'bg-emerald-500/10 border-emerald-500 text-emerald-700 dark:text-emerald-300'
+                        : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                    <span>WhatsApp ({lang === 'ar' ? 'فوري ومباشر' : 'Instant'})</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPreferredContactChannel('sms')}
+                    className={`flex items-center gap-2 p-2.5 rounded-xl border text-xs font-medium font-sans text-start transition ${
+                      preferredContactChannel === 'sms'
+                        ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-500 text-rose-600 dark:text-rose-400'
+                        : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
+                    <span>SMS ({lang === 'ar' ? 'رسائل قصيرة' : 'Text message'})</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPreferredContactChannel('email')}
+                    className={`flex items-center gap-2 p-2.5 rounded-xl border text-xs font-medium font-sans text-start transition ${
+                      preferredContactChannel === 'email'
+                        ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-500 text-blue-600 dark:text-blue-400'
+                        : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+                    <span>Email ({lang === 'ar' ? 'بريد إلكتروني رسمي' : 'Official PDF'})</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold font-sans text-slate-700 dark:text-slate-300 mb-1.5">
                     {t.profile.nationality}

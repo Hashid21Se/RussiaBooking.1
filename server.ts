@@ -16,6 +16,7 @@ import authController from './src/server/controllers/authController';
 import hotelController from './src/server/controllers/hotelController';
 import bookingController from './src/server/controllers/bookingController';
 import paymentController from './src/server/controllers/paymentController';
+import inventoryController from './src/server/controllers/inventoryController';
 import partnerController from './src/server/controllers/partnerController';
 import adminController from './src/server/controllers/adminController';
 import { dbManager } from './src/server/database/postgresClient';
@@ -45,6 +46,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 // Layered Architecture Controllers
 app.use('/api/auth', authController);
+app.use('/api/payments', paymentController);
+app.use('/api/inventory', inventoryController);
 app.use('/api/partner', partnerController);
 app.use('/api/admin/v2', adminController);
 
@@ -224,79 +227,8 @@ app.post('/api/bookings/:id/cancel', async (req: Request, res: Response) => {
 });
 
 // ==========================================
-// 4. PAYMENT GATEWAYS & ADAPTERS (Sections 18, 19, 20)
+// 4. PAYMENT GATEWAYS & ADAPTERS (PCI-DSS & HMAC routes handled by paymentController mounted at /api/payments)
 // ==========================================
-const paymentIntentSchema = z.object({
-  bookingId: z.string().min(1),
-  bookingCode: z.string().min(1),
-  amountRub: z.number().positive(),
-  amountTargetCurrency: z.number().positive(),
-  currency: z.enum(['RUB', 'SAR', 'AED', 'USD', 'KWD', 'QAR']),
-  customerEmail: z.string().email(),
-  customerName: z.string().min(2),
-  customerPhone: z.string().min(6),
-  idempotencyKey: z.string().min(8),
-  provider: z.enum(['MADA', 'TAMARA', 'TAP', 'CREDIT_CARD', 'SANDBOX']),
-});
-
-app.post('/api/payments/intent', async (req: Request, res: Response) => {
-  try {
-    const validated = paymentIntentSchema.parse(req.body);
-    const providerInstance = PaymentService.getProvider(validated.provider);
-    const result = await providerInstance.createIntent(validated as CreateIntentRequest);
-    res.json({ success: true, data: result });
-  } catch (error: any) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ success: false, error: error.issues[0]?.message });
-    }
-    res.status(500).json({ success: false, error: error.message || 'Failed to create payment intent' });
-  }
-});
-
-app.post('/api/payments/verify', async (req: Request, res: Response) => {
-  try {
-    const { transactionId, providerTransactionId, bookingId, provider } = req.body;
-    if (!transactionId || !bookingId) {
-      return res.status(400).json({ success: false, error: 'Missing transactionId or bookingId' });
-    }
-
-    const providerInstance = PaymentService.getProvider(provider || 'SANDBOX');
-    const verifyResult = await providerInstance.verifyPayment({
-      transactionId,
-      providerTransactionId: providerTransactionId || transactionId,
-      bookingId,
-    });
-
-    if (!verifyResult.success) {
-      return res.status(400).json({ success: false, error: verifyResult.error || 'Payment verification failed' });
-    }
-
-    // Confirm booking and state machine transition
-    const confirmedBooking = await bookingEngine.confirmBookingPayment(bookingId, transactionId);
-
-    res.json({
-      success: true,
-      data: {
-        payment: verifyResult,
-        booking: confirmedBooking,
-      }
-    });
-  } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message || 'Payment verification error' });
-  }
-});
-
-// Webhook listener for async gateway callbacks (Section 18)
-app.post('/api/payments/webhook', async (req: Request, res: Response) => {
-  try {
-    const signature = req.headers['x-webhook-signature'];
-    const event = req.body;
-    console.log('[Webhook] Received payment notification:', event.event_type || 'PAYMENT_SUCCESS');
-    res.json({ received: true });
-  } catch (error) {
-    res.status(400).json({ error: 'Invalid webhook payload' });
-  }
-});
 
 // ==========================================
 // 5. REVIEWS & FAVORITES (Sections 23, 24)
