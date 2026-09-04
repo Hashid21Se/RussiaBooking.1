@@ -2,13 +2,13 @@
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>RussiaBooking | منصة حجز فنادق روسيا</title>
-    <meta name="description" content="منصة حجز فنادق موثوقة في روسيا للمسافرين من الشرق الأوسط والخليج. موسكو، سانت بطرسبرغ، سوتشي وقازان مع دفع آمن بمدى وتمارا والبطاقات." />
+    <meta name="description" content="منصة حجز فنادق موثوقة في روسيا للمسافرين من الشرق الأوسط والخليج. موسكو، سانت بطرسبرغ، [...]" />
     <meta property="og:title" content="RussiaBooking | فنادق روسيا للمسافرين العرب" />
-    <meta property="og:description" content="احجز أفضل فنادق روسيا مع خيارات دفع محلية، تأكيد فوري باللغتين العربية والإنجليزية." />
+    <meta property="og:description" content="احجز أفضل فنادق روسيا مع خيارات دفع محلية، تأكيد فوري باللغتين العربية والإنجليزية[...]" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="./assets/og-image.png" />
+    <meta property="og:image" content="https://hashid21se.github.io/RussiaBooking.1/assets/og-image.png" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content="#0f172a" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -39,8 +39,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
   <body class="bg-[#F8F9FA] text-[#1A1A1A] antialiased dark:bg-[#0F141C] dark:text-[#F3F4F6] min-h-screen font-sans">
+    <!-- Accessible skip link: visible when focused -->
+    <a href="#root" class="skip-link" style="position:absolute;left:-999px;top:auto;padding:8px;background:#000;color:#fff;z-index:9999;transition:left .2s;" onfocus="this.style.left='10px';" onblur="this.style.left='-999px';">تخطَّ إلى المحتوى / Skip to content</a>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <!-- Production entry: replace /assets/main.js with the actual built bundle after running the build -->
+    <script type="module" src="/assets/main.js"></script>
   </body>
 </html>
-
