@@ -205,15 +205,19 @@ export const LoyaltyPrivilegesCard: React.FC<LoyaltyComponentProps> = ({
       id="loyalty-privileges-card"
       className={`rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-xs ${className}`}
     >
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-base sm:text-lg font-bold font-display text-slate-900 dark:text-white flex items-center gap-2">
-            <Gift className="w-5 h-5 text-rose-600" />
-            <span>{t.loyalty.perksTitle}</span>
-          </h2>
-          <p className="text-xs font-text text-slate-500 dark:text-slate-400 mt-0.5">
-            {lang === 'ar' ? 'مزايا حصرية تتصاعد تلقائياً مع كل حجز فندقي مؤكد' : 'Exclusive perks that scale automatically with your confirmed stays'}
-          </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 mb-6 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 shrink-0">
+            <Gift className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-base sm:text-lg font-bold font-display text-slate-900 dark:text-white">
+              {t.loyalty.perksTitle}
+            </h2>
+            <p className="text-xs font-sans text-slate-500 dark:text-slate-400 mt-0.5">
+              {lang === 'ar' ? 'مزايا حصرية تتصاعد تلقائياً مع كل حجز فندقي مؤكد' : 'Exclusive perks that scale automatically with your confirmed stays'}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -293,16 +297,20 @@ export const LoyaltyLedgerCard: React.FC<LoyaltyComponentProps> = ({
         onClick={() => setShowLedger(!showLedger)}
         className="flex items-center justify-between cursor-pointer select-none"
       >
-        <div>
-          <h2 className="text-base sm:text-lg font-bold font-display text-slate-900 dark:text-white flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-rose-600" />
-            <span>{t.loyalty.transactionsHistory}</span>
-          </h2>
-          <p className="text-xs font-text text-slate-500 dark:text-slate-400 mt-0.5">
-            {lang === 'ar'
-              ? 'سجل النقاط المكتسبة عن كل حجز فندقي مؤكد ومكتمل'
-              : 'Ledger of loyalty points credited on each confirmed stay'}
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 shrink-0">
+            <TrendingUp className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-base sm:text-lg font-bold font-display text-slate-900 dark:text-white">
+              {t.loyalty.transactionsHistory}
+            </h2>
+            <p className="text-xs font-sans text-slate-500 dark:text-slate-400 mt-0.5">
+              {lang === 'ar'
+                ? 'سجل النقاط المكتسبة عن كل حجز فندقي مؤكد ومكتمل'
+                : 'Ledger of loyalty points credited on each confirmed stay'}
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
@@ -310,11 +318,13 @@ export const LoyaltyLedgerCard: React.FC<LoyaltyComponentProps> = ({
             {profile.loyaltyTransactions?.length || 0}{' '}
             <span className="font-sans">{lang === 'ar' ? 'عمليات' : 'entries'}</span>
           </span>
-          {showLedger ? (
-            <ChevronDown className="w-4 h-4 text-slate-400" />
-          ) : (
-            <ChevronRight className="w-4 h-4 text-slate-400 rtl:rotate-180" />
-          )}
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500">
+            {showLedger ? (
+              <ChevronDown className="w-4 h-4" />
+            ) : (
+              <ChevronRight className="w-4 h-4 rtl:rotate-180" />
+            )}
+          </div>
         </div>
       </div>
 

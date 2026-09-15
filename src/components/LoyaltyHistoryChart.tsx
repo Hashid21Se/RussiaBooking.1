@@ -216,19 +216,19 @@ export const LoyaltyHistoryChart: React.FC<LoyaltyHistoryChartProps> = ({
       className={`rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-sm space-y-6 ${className}`}
     >
       {/* Header with Title and Chart Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400">
-              <TrendingUp className="w-4 h-4" />
-            </div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 shrink-0">
+            <TrendingUp className="w-5 h-5" />
+          </div>
+          <div>
             <h2 className="text-base sm:text-lg font-bold font-display text-slate-900 dark:text-white">
               {t.loyalty.chartTitle}
             </h2>
+            <p className="text-xs font-sans text-slate-500 dark:text-slate-400 mt-0.5">
+              {t.loyalty.chartSubtitle}
+            </p>
           </div>
-          <p className="text-xs font-text text-slate-500 dark:text-slate-400 mt-1">
-            {t.loyalty.chartSubtitle}
-          </p>
         </div>
 
         {/* Chart View Mode & Metric Toggles */}
