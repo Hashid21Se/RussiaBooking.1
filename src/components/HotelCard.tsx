@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Star, 
   MapPin, 
@@ -13,12 +13,15 @@ import {
   Waves,
   Flame,
   Clock,
-  Tag
+  Tag,
+  FileDown,
+  Loader2
 } from 'lucide-react';
 import { Hotel, SupportedCurrency } from '../types';
 import { Language, translations } from '../lib/i18n';
 import { CurrencyService } from '../lib/currency';
 import { OptimizedImage } from './OptimizedImage';
+import { downloadHotelFactSheetPdf } from '../lib/pdfVoucherGenerator';
 
 interface HotelCardProps {
   hotel: Hotel;
@@ -42,12 +45,26 @@ export const HotelCard: React.FC<HotelCardProps> = ({
   onToggleCompare,
 }) => {
   const t = translations[lang];
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
   const primaryImage = hotel.images[0]?.url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80';
+
+  const handleQuickExportPdf = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isExportingPdf) return;
+    setIsExportingPdf(true);
+    try {
+      await downloadHotelFactSheetPdf(hotel, lang, currency);
+    } catch (err) {
+      console.error('Error exporting PDF:', err);
+    } finally {
+      setIsExportingPdf(false);
+    }
+  };
 
   return (
     <div 
       id={`hotel-card-${hotel.id}`}
-      className="group flex flex-col sm:flex-row overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-[#151C28] shadow-xs hover:shadow-md transition-all duration-200"
+      className="hotel-card group flex flex-col sm:flex-row overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-[#151C28] shadow-xs hover:shadow-md transition-all duration-200"
     >
       {/* Image Thumbnail Container */}
       <div className="relative w-full sm:w-72 md:w-80 shrink-0 aspect-[16/11] sm:aspect-auto overflow-hidden bg-[#F3F4F6] dark:bg-slate-800">
@@ -59,7 +76,7 @@ export const HotelCard: React.FC<HotelCardProps> = ({
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent sm:hidden"></div>
 
-        {/* Favorite & Compare Buttons Container */}
+        {/* Favorite, Compare & PDF Export Buttons Container */}
         <div className="absolute top-3 end-3 flex items-center gap-1.5 z-10">
           {onToggleCompare && (
             <button
@@ -68,10 +85,10 @@ export const HotelCard: React.FC<HotelCardProps> = ({
                 e.stopPropagation();
                 onToggleCompare(hotel);
               }}
-              className={`rounded-full px-2.5 py-1 text-[10px] font-bold backdrop-blur-md transition-all active:scale-90 flex items-center gap-1 ${
+              className={`min-h-[44px] min-w-[44px] rounded-full px-3.5 py-2 text-xs font-bold backdrop-blur-md transition-all active:scale-90 flex items-center justify-center gap-1 shadow-sm ${
                 isCompared
                   ? 'bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400'
-                  : 'bg-white/85 dark:bg-black/60 text-[#111827] dark:text-white hover:bg-white'
+                  : 'bg-white/90 dark:bg-black/70 text-[#111827] dark:text-white hover:bg-white'
               }`}
               title={isCompared ? t.compare.addedToCompare : t.compare.addToCompare}
               aria-label="Toggle compare"
@@ -80,16 +97,32 @@ export const HotelCard: React.FC<HotelCardProps> = ({
             </button>
           )}
 
+          {/* Quick PDF Factsheet Export */}
+          <button
+            id={`pdf-export-btn-${hotel.id}`}
+            onClick={handleQuickExportPdf}
+            disabled={isExportingPdf}
+            className="min-h-[44px] min-w-[44px] rounded-full p-2.5 backdrop-blur-md transition-all active:scale-90 flex items-center justify-center bg-white/90 dark:bg-black/70 text-[#111827] dark:text-white hover:bg-white shadow-sm"
+            title={t.pdfExport?.quickExport || 'Export PDF'}
+            aria-label="Export hotel PDF"
+          >
+            {isExportingPdf ? (
+              <Loader2 className="w-4 h-4 animate-spin text-[#E11D48]" />
+            ) : (
+              <FileDown className="w-4 h-4 text-[#E11D48]" />
+            )}
+          </button>
+
           <button
             id={`fav-btn-${hotel.id}`}
             onClick={(e) => {
               e.stopPropagation();
               onToggleFavorite(hotel.id);
             }}
-            className={`rounded-full p-2 backdrop-blur-md transition-all active:scale-90 ${
+            className={`min-h-[44px] min-w-[44px] rounded-full p-2.5 backdrop-blur-md transition-all active:scale-90 flex items-center justify-center shadow-sm ${
               isFavorite 
-                ? 'bg-[#E11D48] text-white shadow-xs' 
-                : 'bg-white/80 dark:bg-black/60 text-[#111827] dark:text-white hover:bg-white'
+                ? 'bg-[#E11D48] text-white' 
+                : 'bg-white/90 dark:bg-black/70 text-[#111827] dark:text-white hover:bg-white'
             }`}
             title={isFavorite ? t.common.unsaved : t.common.saved}
             aria-label="Toggle favorite"
@@ -121,7 +154,7 @@ export const HotelCard: React.FC<HotelCardProps> = ({
       </div>
 
       {/* Hotel Content & Info */}
-      <div className="flex flex-1 flex-col justify-between p-5">
+      <div className="flex flex-1 flex-col justify-between p-4 sm:p-5 md:p-6">
         <div>
           {/* Top meta: Stars & Rating */}
           <div className="flex items-start justify-between gap-2">
@@ -139,7 +172,7 @@ export const HotelCard: React.FC<HotelCardProps> = ({
               {/* Hotel Title */}
               <h3 
                 onClick={() => onSelect(hotel)}
-                className="text-lg font-bold text-[#111827] dark:text-white group-hover:text-[#E11D48] transition-colors cursor-pointer"
+                className="text-lg font-bold text-[#111827] dark:text-white group-hover:text-[#E11D48] transition-colors cursor-pointer min-h-[44px] flex items-center"
               >
                 {lang === 'ar' ? hotel.nameAr : hotel.nameEn}
               </h3>
@@ -222,7 +255,7 @@ export const HotelCard: React.FC<HotelCardProps> = ({
         </div>
 
         {/* Bottom Price & Booking CTA */}
-        <div className="mt-4 pt-3.5 border-t border-gray-100 dark:border-slate-800 flex items-end justify-between">
+        <div className="mt-4 pt-3.5 border-t border-gray-100 dark:border-slate-800 flex flex-col xs:flex-row sm:flex-row items-stretch xs:items-end sm:items-end justify-between gap-3.5">
           <div>
             <div className="text-[10px] uppercase tracking-wider font-bold text-[#9CA3AF]">
               {t.hotelCard.perNight}
@@ -245,7 +278,7 @@ export const HotelCard: React.FC<HotelCardProps> = ({
           <button
             id={`view-rooms-btn-${hotel.id}`}
             onClick={() => onSelect(hotel)}
-            className="flex items-center gap-1.5 rounded-xl bg-[#111827] hover:bg-black text-white dark:bg-[#E11D48] dark:hover:bg-[#BE123C] px-4 py-2.5 text-xs sm:text-sm font-bold shadow-xs transition active:scale-95"
+            className="min-h-[44px] w-full xs:w-auto sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-[#111827] hover:bg-black text-white dark:bg-[#E11D48] dark:hover:bg-[#BE123C] px-5 py-2.5 text-xs sm:text-sm font-bold shadow-xs transition active:scale-95 whitespace-nowrap"
           >
             <Eye className="w-4 h-4" />
             <span>{t.hotelCard.viewDetails}</span>

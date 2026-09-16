@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   X, 
   Check, 
@@ -11,17 +11,20 @@ import {
   Trash2, 
   ArrowRight, 
   ArrowLeft,
-  Calendar
+  Calendar,
+  FileDown,
+  Loader2
 } from 'lucide-react';
 import { Hotel, SupportedCurrency } from '../types';
 import { Language, translations } from '../lib/i18n';
 import { CurrencyService } from '../lib/currency';
+import { downloadComparisonPdf } from '../lib/pdfVoucherGenerator';
 
 interface HotelComparisonModalProps {
   hotels: Hotel[];
   lang: Language;
   currency: SupportedCurrency;
-  isOpen: boolean;
+  isOpen?: boolean;
   onClose: () => void;
   onRemoveHotel: (hotelId: string) => void;
   onSelectHotel: (hotel: Hotel) => void;
@@ -32,15 +35,28 @@ export const HotelComparisonModal: React.FC<HotelComparisonModalProps> = ({
   hotels,
   lang,
   currency,
-  isOpen,
+  isOpen = true,
   onClose,
   onRemoveHotel,
   onSelectHotel,
   onClearAll,
 }) => {
   const t = translations[lang];
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
 
   if (!isOpen) return null;
+
+  const handleExportPdf = async () => {
+    if (isExportingPdf || hotels.length === 0) return;
+    setIsExportingPdf(true);
+    try {
+      await downloadComparisonPdf(hotels, lang, currency);
+    } catch (err) {
+      console.error('Error exporting comparison PDF:', err);
+    } finally {
+      setIsExportingPdf(false);
+    }
+  };
 
   return (
     <div 
@@ -64,20 +80,41 @@ export const HotelComparisonModal: React.FC<HotelComparisonModalProps> = ({
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {hotels.length > 0 && (
-              <button
-                onClick={onClearAll}
-                className="hidden sm:flex items-center gap-1.5 text-xs text-rose-600 hover:text-rose-700 dark:text-rose-400 font-semibold px-3 py-1.5 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>{t.compare.clearAll}</span>
-              </button>
+              <>
+                <button
+                  id="export-comparison-pdf-btn"
+                  onClick={handleExportPdf}
+                  disabled={isExportingPdf}
+                  className="min-h-[44px] flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-[#E11D48] dark:hover:text-[#E11D48] px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition shadow-xs active:scale-95"
+                  title={t.pdfExport?.compareExportPdf || 'Export Comparison PDF'}
+                >
+                  {isExportingPdf ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-[#E11D48]" />
+                  ) : (
+                    <FileDown className="w-4 h-4 text-[#E11D48]" />
+                  )}
+                  <span>
+                    {isExportingPdf 
+                      ? (t.pdfExport?.exportingPdf || 'Exporting...') 
+                      : (t.pdfExport?.compareExportPdf || 'Export PDF')}
+                  </span>
+                </button>
+
+                <button
+                  onClick={onClearAll}
+                  className="min-h-[44px] hidden sm:flex items-center gap-1.5 text-xs text-rose-600 hover:text-rose-700 dark:text-rose-400 font-semibold px-3 py-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/40 transition active:scale-95"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>{t.compare.clearAll}</span>
+                </button>
+              </>
             )}
 
             <button
               onClick={onClose}
-              className="p-2 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition active:scale-95"
               aria-label="Close modal"
             >
               <X className="w-5 h-5" />
@@ -109,10 +146,10 @@ export const HotelComparisonModal: React.FC<HotelComparisonModalProps> = ({
                   >
                     <button
                       onClick={() => onRemoveHotel(hotel.id)}
-                      className="absolute top-2 end-2 z-10 p-1.5 rounded-full bg-black/60 text-white hover:bg-rose-600 transition"
+                      className="absolute top-2 end-2 z-10 min-h-[44px] min-w-[44px] flex items-center justify-center p-2.5 rounded-full bg-black/70 text-white hover:bg-rose-600 transition shadow-sm active:scale-95"
                       title={t.compare.remove}
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <X className="w-4 h-4" />
                     </button>
 
                     <div className="aspect-[16/10] w-full rounded-xl overflow-hidden mb-2.5 bg-slate-200 dark:bg-slate-700">
@@ -135,10 +172,10 @@ export const HotelComparisonModal: React.FC<HotelComparisonModalProps> = ({
                         onSelectHotel(hotel);
                         onClose();
                       }}
-                      className="mt-3 w-full py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs transition shadow-xs flex items-center justify-center gap-1"
+                      className="min-h-[44px] mt-3 w-full py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs transition shadow-xs flex items-center justify-center gap-1.5 active:scale-95"
                     >
                       <span>{t.compare.bookThis}</span>
-                      {lang === 'ar' ? <ArrowLeft className="w-3.5 h-3.5" /> : <ArrowRight className="w-3.5 h-3.5" />}
+                      {lang === 'ar' ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
                     </button>
                   </div>
                 ))}

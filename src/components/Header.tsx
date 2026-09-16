@@ -432,7 +432,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             id="mobile-menu-btn"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden rounded-lg p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl p-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition active:scale-95"
             aria-label="Open navigation menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -442,21 +442,21 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-[#E5E7EB] dark:border-slate-800 bg-white dark:bg-[#0F141C] px-4 py-4 space-y-1.5 shadow-lg">
+        <div className="mobile-nav lg:hidden border-t border-[#E5E7EB] dark:border-slate-800 bg-white dark:bg-[#0F141C] px-4 py-4 space-y-2 shadow-lg">
           {/* Currency selector - moved here from header row on narrow phones */}
-          <div className="sm:hidden pb-2 mb-1.5 border-b border-[#E5E7EB] dark:border-slate-800">
+          <div className="sm:hidden pb-3 mb-2 border-b border-[#E5E7EB] dark:border-slate-800">
             <div className="px-3.5 pb-2 text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]">
               {lang === 'ar' ? 'عملة العرض' : 'Display Currency'}
             </div>
-            <div className="flex flex-wrap gap-1.5 px-3.5">
+            <div className="grid grid-cols-3 gap-2 px-1">
               {currencies.map(curr => (
                 <button
                   key={curr}
                   onClick={() => onCurrencyChange(curr)}
-                  className={`rounded-lg px-2.5 py-1 text-xs font-bold transition ${
+                  className={`min-h-[44px] min-w-[44px] px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center ${
                     currency === curr
-                      ? 'bg-[#E11D48]/10 text-[#E11D48] border border-[#E11D48]/30'
-                      : 'bg-[#F3F4F6] dark:bg-slate-800 text-[#111827] dark:text-slate-300'
+                      ? 'bg-[#E11D48]/10 text-[#E11D48] border-2 border-[#E11D48]'
+                      : 'bg-[#F3F4F6] dark:bg-slate-800 text-[#111827] dark:text-slate-300 border border-transparent hover:border-slate-300'
                   }`}
                 >
                   {curr}
@@ -465,79 +465,79 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
           {/* PWA install access - moved here from header row on narrow phones */}
-          <div className="sm:hidden pb-2 mb-1.5 border-b border-[#E5E7EB] dark:border-slate-800 px-3.5">
+          <div className="sm:hidden pb-3 mb-2 border-b border-[#E5E7EB] dark:border-slate-800 px-1">
             <PWAInstallButton lang={lang} />
           </div>
           <button
             onClick={() => { onNavigate('home'); setMobileMenuOpen(false); }}
-            className="w-full flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#111827] dark:text-slate-200 hover:bg-[#F3F4F6] dark:hover:bg-slate-800"
+            className="w-full min-h-[44px] flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-[#111827] dark:text-slate-200 hover:bg-[#F3F4F6] dark:hover:bg-slate-800 transition active:scale-[0.98]"
           >
             <span>{t.nav.home}</span>
           </button>
           <button
             onClick={() => { onNavigate('search'); setMobileMenuOpen(false); }}
-            className="w-full flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#111827] dark:text-slate-200 hover:bg-[#F3F4F6] dark:hover:bg-slate-800"
+            className="w-full min-h-[44px] flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-[#111827] dark:text-slate-200 hover:bg-[#F3F4F6] dark:hover:bg-slate-800 transition active:scale-[0.98]"
           >
             <Building2 className="w-4 h-4 text-[#E11D48]" />
             <span>{t.nav.hotels}</span>
           </button>
           <button
             onClick={() => { onNavigate('destinations'); setMobileMenuOpen(false); }}
-            className="w-full flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#111827] dark:text-slate-200 hover:bg-[#F3F4F6] dark:hover:bg-slate-800"
+            className="w-full min-h-[44px] flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-[#111827] dark:text-slate-200 hover:bg-[#F3F4F6] dark:hover:bg-slate-800 transition active:scale-[0.98]"
           >
             <Compass className="w-4 h-4 text-[#6B7280]" />
             <span>{t.nav.destinations}</span>
           </button>
           <button
             onClick={() => { onNavigate('guide'); setMobileMenuOpen(false); }}
-            className="w-full flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#111827] dark:text-slate-200 hover:bg-[#F3F4F6] dark:hover:bg-slate-800"
+            className="w-full min-h-[44px] flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-[#111827] dark:text-slate-200 hover:bg-[#F3F4F6] dark:hover:bg-slate-800 transition active:scale-[0.98]"
           >
             <FileText className="w-4 h-4 text-[#6B7280]" />
             <span>{t.nav.guide}</span>
           </button>
           <button
             onClick={() => { onNavigate('my-bookings'); setMobileMenuOpen(false); }}
-            className="w-full flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#111827] dark:text-slate-200 hover:bg-[#F3F4F6] dark:hover:bg-slate-800"
+            className="w-full min-h-[44px] flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-[#111827] dark:text-slate-200 hover:bg-[#F3F4F6] dark:hover:bg-slate-800 transition active:scale-[0.98]"
           >
             <span className="flex items-center gap-3">
               <Briefcase className="w-4 h-4 text-[#6B7280]" />
               <span>{t.nav.myBookings}</span>
             </span>
             {bookingsCount > 0 && (
-              <span className="rounded-full bg-[#E11D48] px-2 py-0.5 text-xs font-bold text-white">
+              <span className="rounded-full bg-[#E11D48] px-2.5 py-1 text-xs font-bold text-white">
                 {bookingsCount}
               </span>
             )}
           </button>
           <button
             onClick={() => { onNavigate('saved'); setMobileMenuOpen(false); }}
-            className="w-full flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#111827] dark:text-slate-200 hover:bg-[#F3F4F6] dark:hover:bg-slate-800"
+            className="w-full min-h-[44px] flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-[#111827] dark:text-slate-200 hover:bg-[#F3F4F6] dark:hover:bg-slate-800 transition active:scale-[0.98]"
           >
             <span className="flex items-center gap-3">
               <Bookmark className="w-4 h-4 text-[#6B7280]" />
               <span>{t.nav.saved}</span>
             </span>
             {savedCount > 0 && (
-              <span className="rounded-full bg-[#E5E7EB] dark:bg-slate-700 px-2 py-0.5 text-xs font-bold text-[#111827]">
+              <span className="rounded-full bg-[#E5E7EB] dark:bg-slate-700 px-2.5 py-1 text-xs font-bold text-[#111827]">
                 {savedCount}
               </span>
             )}
           </button>
           <button
             onClick={() => { onNavigate('profile'); setMobileMenuOpen(false); }}
-            className="w-full flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#111827] dark:text-slate-200 hover:bg-[#F3F4F6] dark:hover:bg-slate-800"
+            className="w-full min-h-[44px] flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-[#111827] dark:text-slate-200 hover:bg-[#F3F4F6] dark:hover:bg-slate-800 transition active:scale-[0.98]"
           >
             <span className="flex items-center gap-3">
               <Sparkles className="w-4 h-4 text-[#E11D48]" />
               <span>{t.profile.title}</span>
             </span>
-            <span className="rounded-full bg-rose-50 dark:bg-rose-950/50 px-2.5 py-0.5 text-xs font-bold text-[#E11D48] font-mono">
+            <span className="rounded-full bg-rose-50 dark:bg-rose-950/50 px-2.5 py-1 text-xs font-bold text-[#E11D48] font-mono">
               {loyaltyPoints.toLocaleString()} {t.loyalty.pts}
             </span>
           </button>
           <button
             onClick={() => { onNavigate('admin'); setMobileMenuOpen(false); }}
-            className="w-full flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-bold text-[#111827] dark:text-white hover:bg-[#F3F4F6] dark:hover:bg-slate-800"
+            className="w-full min-h-[44px] flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-[#111827] dark:text-white hover:bg-[#F3F4F6] dark:hover:bg-slate-800 transition active:scale-[0.98]"
           >
             <ShieldCheck className="w-4 h-4 text-[#E11D48]" />
             <span>{t.admin.portalTitle}</span>

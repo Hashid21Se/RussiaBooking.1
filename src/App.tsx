@@ -12,7 +12,7 @@ import { Language, translations } from './lib/i18n';
 import { Hotel, HotelRoom, RoomRate, SearchFilters, SupportedCurrency, Booking, UserProfile, User, UserRole } from './types';
 import { SEED_HOTELS } from './server/seedData';
 import { HotelCard } from './components/HotelCard';
-import { Sparkles, Building, ArrowLeft, ArrowRight, ShieldCheck, Compass, Loader2 } from 'lucide-react';
+import { Sparkles, Building, ArrowLeft, ArrowRight, ShieldCheck, Compass, Loader2, Building2, Briefcase, Bookmark } from 'lucide-react';
 
 // Production Performance Code Splitting (React.lazy + Suspense for Lighthouse Score >= 90)
 const SearchResultsView = lazy(() => import('./components/SearchResultsView').then(m => ({ default: m.SearchResultsView })));
@@ -369,7 +369,23 @@ function filterHotelsClient(allHotels: Hotel[], filters: SearchFilters): Hotel[]
 export default function App() {
   // Global App States
   const [lang, setLang] = useState<Language>('ar');
-  const [currency, setCurrency] = useState<SupportedCurrency>('SAR');
+  const [currency, setCurrencyState] = useState<SupportedCurrency>(() => {
+    try {
+      const saved = localStorage.getItem('russiabooking_currency');
+      if (saved && ['SAR', 'RUB', 'AED', 'USD', 'KWD', 'QAR'].includes(saved)) {
+        return saved as SupportedCurrency;
+      }
+    } catch (e) {}
+    return 'SAR';
+  });
+
+  const handleCurrencyChange = (newCurrency: SupportedCurrency) => {
+    setCurrencyState(newCurrency);
+    try {
+      localStorage.setItem('russiabooking_currency', newCurrency);
+    } catch (e) {}
+  };
+
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [currentView, setCurrentView] = useState<string>('home');
   const [userRole, setUserRole] = useState<UserRole>('TRAVELER');
@@ -912,7 +928,7 @@ export default function App() {
         lang={lang}
         onLanguageChange={setLang}
         currency={currency}
-        onCurrencyChange={setCurrency}
+        onCurrencyChange={handleCurrencyChange}
         theme={theme}
         onToggleTheme={() => setTheme(theme === 'light' ? 'dark' : 'light')}
         currentView={currentView}
@@ -933,7 +949,7 @@ export default function App() {
       />
 
       {/* Main Content Render Area - WCAG 2.1 AA Accessible Landmark */}
-      <main id="main-content" role="main" tabIndex={-1} className="flex-1 focus:outline-none">
+      <main id="main-content" role="main" tabIndex={-1} className="flex-1 pb-20 lg:pb-0 focus:outline-none">
         <Suspense fallback={<ViewFallback lang={lang} />}>
           {/* VIEW: HOME */}
           {currentView === 'home' && (
@@ -1019,6 +1035,7 @@ export default function App() {
               allHotels={hotels}
               lang={lang}
               currency={currency}
+              onCurrencyChange={handleCurrencyChange}
               isFavorite={favorites.includes(selectedHotel.id)}
               onToggleFavorite={handleToggleFavorite}
               onBack={() => handleNavigate('search')}
@@ -1138,6 +1155,95 @@ export default function App() {
           onAuthSuccess={handleAuthSuccess}
         />
       </Suspense>
+
+      {/* Mobile Bottom Navigation Bar (Thumb friendly with >= 44px tap targets) */}
+      <nav 
+        id="mobile-bottom-nav"
+        className="mobile-nav fixed bottom-0 inset-x-0 z-40 lg:hidden border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-[#0F141C]/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)] shadow-lg"
+        aria-label="Mobile Navigation"
+      >
+        <div className="grid grid-cols-5 h-16 max-w-md mx-auto">
+          {/* Hotels / Search */}
+          <button
+            id="mobile-nav-hotels"
+            onClick={() => handleNavigate('search')}
+            className={`flex flex-col items-center justify-center min-h-[44px] min-w-[44px] py-1 px-1 transition-colors active:scale-95 ${
+              currentView === 'search' || currentView === 'home'
+                ? 'text-[#E11D48] font-bold'
+                : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium'
+            }`}
+          >
+            <Building2 className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] leading-tight truncate max-w-full">{t.nav.hotels}</span>
+          </button>
+
+          {/* Destinations */}
+          <button
+            id="mobile-nav-destinations"
+            onClick={() => handleNavigate('destinations')}
+            className={`flex flex-col items-center justify-center min-h-[44px] min-w-[44px] py-1 px-1 transition-colors active:scale-95 ${
+              currentView === 'destinations' || currentView === 'guide'
+                ? 'text-[#E11D48] font-bold'
+                : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium'
+            }`}
+          >
+            <Compass className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] leading-tight truncate max-w-full">{t.nav.destinations}</span>
+          </button>
+
+          {/* My Bookings */}
+          <button
+            id="mobile-nav-bookings"
+            onClick={() => handleNavigate('my-bookings')}
+            className={`relative flex flex-col items-center justify-center min-h-[44px] min-w-[44px] py-1 px-1 transition-colors active:scale-95 ${
+              currentView === 'my-bookings'
+                ? 'text-[#E11D48] font-bold'
+                : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium'
+            }`}
+          >
+            <Briefcase className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] leading-tight truncate max-w-full">{t.nav.myBookings}</span>
+            {bookings.length > 0 && (
+              <span className="absolute top-1.5 end-3 flex h-4 w-4 items-center justify-center rounded-full bg-[#E11D48] text-[9px] font-bold text-white">
+                {bookings.length}
+              </span>
+            )}
+          </button>
+
+          {/* Saved */}
+          <button
+            id="mobile-nav-saved"
+            onClick={() => handleNavigate('saved')}
+            className={`relative flex flex-col items-center justify-center min-h-[44px] min-w-[44px] py-1 px-1 transition-colors active:scale-95 ${
+              currentView === 'saved'
+                ? 'text-[#E11D48] font-bold'
+                : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium'
+            }`}
+          >
+            <Bookmark className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] leading-tight truncate max-w-full">{t.nav.saved}</span>
+            {favorites.length > 0 && (
+              <span className="absolute top-1.5 end-3 flex h-4 w-4 items-center justify-center rounded-full bg-slate-800 dark:bg-slate-700 text-[9px] font-bold text-white">
+                {favorites.length}
+              </span>
+            )}
+          </button>
+
+          {/* Profile */}
+          <button
+            id="mobile-nav-profile"
+            onClick={() => handleNavigate('profile')}
+            className={`flex flex-col items-center justify-center min-h-[44px] min-w-[44px] py-1 px-1 transition-colors active:scale-95 ${
+              currentView === 'profile'
+                ? 'text-[#E11D48] font-bold'
+                : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium'
+            }`}
+          >
+            <Sparkles className="w-5 h-5 mb-0.5 text-amber-500" />
+            <span className="text-[10px] leading-tight truncate max-w-full">{t.nav.profile}</span>
+          </button>
+        </div>
+      </nav>
     </div>
   );
 }

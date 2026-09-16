@@ -19,19 +19,26 @@ import {
   ChevronRight,
   Info,
   Building,
-  Plane
+  Plane,
+  Coins,
+  Compass,
+  FileDown,
+  Loader2
 } from 'lucide-react';
 import { Hotel, HotelRoom, RoomRate, SupportedCurrency } from '../types';
 import { Language, translations } from '../lib/i18n';
-import { CurrencyService } from '../lib/currency';
+import { CurrencyService, CURRENCY_RATES } from '../lib/currency';
 import { GuestReviewsBreakdown } from './GuestReviewsBreakdown';
 import { OptimizedImage } from './OptimizedImage';
+import { HotelLocationMap } from './HotelLocationMap';
+import { downloadHotelFactSheetPdf } from '../lib/pdfVoucherGenerator';
 
 interface HotelDetailsViewProps {
   hotel: Hotel;
   allHotels: Hotel[];
   lang: Language;
   currency: SupportedCurrency;
+  onCurrencyChange?: (currency: SupportedCurrency) => void;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
   onBack: () => void;
@@ -44,6 +51,7 @@ export const HotelDetailsView: React.FC<HotelDetailsViewProps> = ({
   allHotels,
   lang,
   currency,
+  onCurrencyChange,
   isFavorite,
   onToggleFavorite,
   onBack,
@@ -52,12 +60,28 @@ export const HotelDetailsView: React.FC<HotelDetailsViewProps> = ({
 }) => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
   const t = translations[lang];
+
+  const currencies: SupportedCurrency[] = ['SAR', 'RUB', 'AED', 'USD', 'KWD', 'QAR'];
 
   const handleShare = () => {
     navigator.clipboard?.writeText(window.location.href);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
+  };
+
+  const handleExportPdf = async () => {
+    if (isExportingPdf) return;
+    setIsExportingPdf(true);
+    try {
+      await downloadHotelFactSheetPdf(hotel, lang, currency);
+    } catch (err) {
+      console.error('Error exporting factsheet PDF:', err);
+    } finally {
+      setIsExportingPdf(false);
+    }
   };
 
   const similarHotels = allHotels
@@ -67,28 +91,100 @@ export const HotelDetailsView: React.FC<HotelDetailsViewProps> = ({
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 space-y-10">
       {/* Top Navigation Back bar */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <button
           id="hotel-back-btn"
           onClick={onBack}
-          className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+          className="min-h-[44px] flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95"
         >
           {lang === 'ar' ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
           <span>{lang === 'ar' ? 'العودة للنتائج' : 'Back to results'}</span>
         </button>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Currency Switcher Dropdown */}
+          {onCurrencyChange && (
+            <div className="relative">
+              <button
+                id="hotel-currency-btn"
+                onClick={() => setCurrencyDropdownOpen(!currencyDropdownOpen)}
+                className="min-h-[44px] min-w-[44px] flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-xs active:scale-95"
+                title="Change Currency"
+              >
+                <Coins className="w-4 h-4 text-amber-500" />
+                <span>{currency}</span>
+              </button>
+
+              {currencyDropdownOpen && (
+                <div 
+                  className="absolute end-0 mt-2 w-48 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white p-1.5 shadow-xl dark:bg-slate-900 z-50 text-xs"
+                  dir={lang === 'ar' ? 'rtl' : 'ltr'}
+                >
+                  <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    {lang === 'ar' ? 'اختر عملة العرض' : 'Select Currency'}
+                  </div>
+                  {currencies.map((curr) => {
+                    const info = (CURRENCY_RATES as any)[curr];
+                    return (
+                      <button
+                        key={curr}
+                        id={`hotel-curr-option-${curr}`}
+                        onClick={() => {
+                          onCurrencyChange(curr);
+                          setCurrencyDropdownOpen(false);
+                        }}
+                        className={`min-h-[44px] w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-left transition ${
+                          currency === curr 
+                            ? 'bg-amber-500/10 font-bold text-amber-600 dark:text-amber-400' 
+                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className="font-mono font-bold">{curr}</span>
+                          <span className="text-slate-500 text-[11px]">
+                            {lang === 'ar' ? info?.nameAr : info?.nameEn}
+                          </span>
+                        </span>
+                        <span className="font-semibold text-slate-400">
+                          {lang === 'ar' ? info?.symbolAr : info?.symbol}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Export PDF Factsheet Button */}
           <button
-            onClick={handleShare}
-            className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+            id="hotel-export-pdf-btn"
+            onClick={handleExportPdf}
+            disabled={isExportingPdf}
+            className="min-h-[44px] flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-[#E11D48] dark:hover:text-[#E11D48] hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-xs active:scale-95"
+            title={t.pdfExport?.exportFactsheet || 'Export Hotel PDF'}
           >
-            <Share2 className="w-3.5 h-3.5" />
+            {isExportingPdf ? (
+              <Loader2 className="w-4 h-4 animate-spin text-[#E11D48]" />
+            ) : (
+              <FileDown className="w-4 h-4 text-[#E11D48]" />
+            )}
+            <span>{isExportingPdf ? (t.pdfExport?.exportingPdf || 'Exporting...') : (t.pdfExport?.exportFactsheet || 'PDF')}</span>
+          </button>
+
+          <button
+            id="hotel-share-btn"
+            onClick={handleShare}
+            className="min-h-[44px] flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95"
+          >
+            <Share2 className="w-4 h-4" />
             <span>{copiedLink ? (lang === 'ar' ? 'تم النسخ!' : 'Copied!') : (lang === 'ar' ? 'مشاركة' : 'Share')}</span>
           </button>
           <button
+            id="hotel-fav-btn"
             onClick={() => onToggleFavorite(hotel.id)}
-            className={`rounded-xl border border-slate-200 dark:border-slate-800 p-2 text-xs font-semibold transition ${
-              isFavorite ? 'bg-rose-500 text-white' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300'
+            className={`min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 p-2.5 text-xs font-semibold transition active:scale-95 ${
+              isFavorite ? 'bg-rose-500 text-white' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
             }`}
           >
             <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
@@ -257,17 +353,32 @@ export const HotelDetailsView: React.FC<HotelDetailsViewProps> = ({
 
         {/* Location & Nearby Landmarks Card */}
         <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-4">
-          <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-amber-500" />
-            <span>{t.hotelDetails.location}</span>
-          </h3>
-
-          <div className="aspect-[16/9] w-full rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center text-center p-4 text-xs text-slate-500">
-            <MapPin className="w-8 h-8 text-rose-500 mb-1" />
-            <span className="font-bold text-slate-800 dark:text-slate-200">
-              {lang === 'ar' ? hotel.cityAr : hotel.city}
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-amber-500" />
+              <span>{t.hotelDetails.location}</span>
+            </h3>
+            <span className="font-mono text-[11px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+              {hotel.coordinates.lat.toFixed(3)}°, {hotel.coordinates.lng.toFixed(3)}°
             </span>
-            <span>{lang === 'ar' ? hotel.addressAr : hotel.addressEn}</span>
+          </div>
+
+          <div className="rounded-2xl p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 space-y-2 text-xs">
+            <div className="font-bold text-slate-900 dark:text-white text-sm">
+              {lang === 'ar' ? hotel.cityAr : hotel.city}
+            </div>
+            <p className="text-slate-600 dark:text-slate-300">
+              {lang === 'ar' ? hotel.addressAr : hotel.addressEn}
+            </p>
+            <button
+              onClick={() => {
+                document.getElementById('hotel-interactive-map-section')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold py-2 px-3 text-xs transition mt-2"
+            >
+              <Compass className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              <span>{lang === 'ar' ? 'استكشف الخريطة التفاعلية بالأسفل' : 'Open Interactive Map Below'}</span>
+            </button>
           </div>
 
           <div>
@@ -286,17 +397,47 @@ export const HotelDetailsView: React.FC<HotelDetailsViewProps> = ({
         </div>
       </section>
 
+      {/* Interactive Map Component for GCC Travelers */}
+      <HotelLocationMap hotel={hotel} lang={lang} currency={currency} />
+
       {/* Available Rooms & Rates Engine */}
       <section id="rooms-section" className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-black text-slate-900 dark:text-white">
-            {t.hotelDetails.availableRooms}
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            {lang === 'ar' 
-              ? 'اختر نوع الغرفة وخطة الأسعار المناسبة لك، مع تأكيد فوري ودفع آمن'
-              : 'Select your preferred room category and rate plan with immediate confirmation.'}
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white">
+              {t.hotelDetails.availableRooms}
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+              {lang === 'ar' 
+                ? 'اختر نوع الغرفة وخطة الأسعار المناسبة لك، مع تأكيد فوري ودفع آمن'
+                : 'Select your preferred room category and rate plan with immediate confirmation.'}
+            </p>
+          </div>
+
+          {/* Currency Switching Bar */}
+          {onCurrencyChange && (
+            <div className="flex flex-wrap items-center gap-1.5 bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-200/50 dark:border-slate-700/50 shrink-0">
+              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 px-2 flex items-center gap-1">
+                <Coins className="w-3.5 h-3.5 text-amber-500" />
+                <span>{lang === 'ar' ? 'العملة:' : 'Currency:'}</span>
+              </span>
+              {currencies.map((curr) => (
+                <button
+                  key={curr}
+                  id={`room-rate-curr-${curr}`}
+                  onClick={() => onCurrencyChange(curr)}
+                  className={`px-2.5 py-1 rounded-xl text-xs font-bold transition ${
+                    currency === curr
+                      ? 'bg-amber-500 text-slate-950 shadow-xs'
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700'
+                  }`}
+                  title={`Switch to ${curr}`}
+                >
+                  {curr}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="space-y-6">

@@ -310,6 +310,16 @@ export const translations = {
       hotelsInView: 'فنادق معروضة على الخريطة',
       viewHotelDetails: 'تفاصيل الفندق والحجز',
     },
+    pdfExport: {
+      exportHotelPdf: 'تصدير تفاصيل الفندق (PDF)',
+      exportFactsheet: 'تصدير الكتيب الرسمي (PDF)',
+      exportingPdf: 'جارٍ إنشاء ملف الـ PDF...',
+      exportSuccess: 'تم تحميل ملف الـ PDF بنجاح!',
+      compareExportPdf: 'تصدير جدول المقارنة (PDF)',
+      factsheetSubtitle: 'كتيب إقامة رسمي شامل الأسعار والموقع والمرافق الصديقة للمسافرين الخليجيين',
+      sharePdf: 'مشاركة PDF',
+      quickExport: 'تصدير PDF',
+    },
     compare: {
       trayTitle: 'مقارنة الفنادق',
       trayCount: '{count} فنادق محددة للمقارنة',
@@ -712,6 +722,16 @@ export const translations = {
       hoverToPreview: 'Click any hotel pin to view prices and live details',
       hotelsInView: 'Hotels displayed on map',
       viewHotelDetails: 'View Hotel & Reserve',
+    },
+    pdfExport: {
+      exportHotelPdf: 'Export Hotel PDF',
+      exportFactsheet: 'Export Official Factsheet (PDF)',
+      exportingPdf: 'Generating PDF...',
+      exportSuccess: 'PDF downloaded successfully!',
+      compareExportPdf: 'Export Comparison Table (PDF)',
+      factsheetSubtitle: 'Official hotel accommodation guide with rates, amenities & location',
+      sharePdf: 'Share PDF',
+      quickExport: 'Export PDF',
     },
     compare: {
       trayTitle: 'Compare Hotels',

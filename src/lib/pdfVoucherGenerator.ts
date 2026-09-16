@@ -1,6 +1,6 @@
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
-import { Booking, SupportedCurrency } from '../types';
+import { Booking, Hotel, SupportedCurrency } from '../types';
 import { Language, translations } from './i18n';
 import { CurrencyService } from './currency';
 
@@ -338,3 +338,438 @@ export async function downloadBookingVoucherPdf(
     }
   }
 }
+
+/**
+ * Generates and downloads an official Russian Hotel Factsheet & Rate Dossier PDF
+ * for travelers, families, and travel planners.
+ */
+export async function downloadHotelFactSheetPdf(
+  hotel: Hotel,
+  lang: Language = 'ar',
+  currency: SupportedCurrency = 'SAR'
+): Promise<boolean> {
+  const isAr = lang === 'ar';
+  const hotelName = isAr ? hotel.nameAr : hotel.nameEn;
+  const hotelCity = isAr ? hotel.cityAr : hotel.city;
+  const hotelAddress = isAr ? hotel.addressAr : hotel.addressEn;
+  const minPriceFormatted = CurrencyService.format(hotel.minPriceRub, currency, lang);
+  const dateStr = new Date().toLocaleDateString(isAr ? 'ar-SA' : 'en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  const container = document.createElement('div');
+  container.style.position = 'fixed';
+  container.style.top = '-10000px';
+  container.style.left = '-10000px';
+  container.style.width = '794px';
+  container.style.minHeight = '1123px';
+  container.style.backgroundColor = '#ffffff';
+  container.style.color = '#0f172a';
+  container.style.fontFamily = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Cairo", "Plus Jakarta Sans", sans-serif';
+  container.style.boxSizing = 'border-box';
+  container.style.padding = '36px 40px';
+  container.style.zIndex = '-9999';
+  container.dir = isAr ? 'rtl' : 'ltr';
+
+  const starsHtml = '★'.repeat(hotel.stars);
+
+  const roomsRows = hotel.rooms.slice(0, 4).map((room) => {
+    const rName = isAr ? room.nameAr : room.nameEn;
+    const rType = isAr ? room.bedTypeAr : room.bedTypeEn;
+    const lowestRate = room.rates[0];
+    const priceFormatted = lowestRate 
+      ? CurrencyService.format(lowestRate.pricePerNightRub, currency, lang) 
+      : minPriceFormatted;
+
+    return `
+      <tr style="border-bottom: 1px solid #e2e8f0;">
+        <td style="padding: 10px 12px; font-weight: 700; color: #0f172a;">
+          ${rName}
+          <div style="font-size: 11px; color: #64748b; font-weight: normal; margin-top: 2px;">
+            ${rType} • ${isAr ? `يتسع حتى ${room.maxGuests} نزلاء` : `Max ${room.maxGuests} Guests`}
+          </div>
+        </td>
+        <td style="padding: 10px 12px; font-size: 12px; color: #334155;">
+          ${lowestRate?.breakfastIncluded ? (isAr ? '✓ يشمل الإفطار' : '✓ Breakfast Included') : (isAr ? 'بدون وجبات' : 'Room Only')}
+          ${lowestRate?.refundable ? `<br><span style="color: #059669; font-weight: 600;">${isAr ? '✓ إلغاء مجاني' : '✓ Free Cancellation'}</span>` : ''}
+        </td>
+        <td style="padding: 10px 12px; text-align: ${isAr ? 'left' : 'right'}; font-weight: 800; font-size: 14px; color: #e11d48;">
+          ${priceFormatted}
+          <div style="font-size: 10px; color: #94a3b8; font-weight: normal;">${isAr ? 'شامل الضرائب / ليلة' : 'Taxes incl. / night'}</div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  const landmarksHtml = (isAr ? hotel.nearbyLandmarksAr : hotel.nearbyLandmarksEn)?.slice(0, 4).map(lm => `
+    <li style="margin-bottom: 4px; color: #334155; font-size: 11px;">
+      <strong>${lm.name}</strong>: <span style="color: #64748b;">${lm.distance}</span>
+    </li>
+  `).join('') || '';
+
+  container.innerHTML = `
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0f172a; padding-bottom: 16px; margin-bottom: 20px;">
+      <div>
+        <div style="font-size: 22px; font-weight: 900; letter-spacing: -0.5px; color: #0f172a;">
+          Russia<span style="color: #e11d48;">Booking</span>.com
+        </div>
+        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-top: 2px;">
+          ${isAr ? 'بوابة حجز الفنادق الروسية المعتمدة لدول الخليج' : 'Accredited Russian Hotel Booking Gateway for GCC'}
+        </div>
+      </div>
+      <div style="text-align: ${isAr ? 'left' : 'right'};">
+        <div style="background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 4px 10px; font-size: 10px; font-weight: 700; color: #334155; display: inline-block;">
+          ${isAr ? 'كتيب الإقامة الفندقية الرسمي' : 'OFFICIAL HOTEL FACTSHEET'}
+        </div>
+        <div style="font-size: 10px; color: #64748b; margin-top: 4px;">
+          ${isAr ? 'تاريخ الإصدار:' : 'Date:'} ${dateStr}
+        </div>
+      </div>
+    </div>
+
+    <!-- Hotel Identity Banner -->
+    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px 20px; margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+          <div style="color: #f59e0b; font-size: 14px; letter-spacing: 2px; margin-bottom: 4px;">
+            ${starsHtml}
+          </div>
+          <h1 style="font-size: 22px; font-weight: 900; margin: 0 0 6px 0; color: #0f172a; line-height: 1.2;">
+            ${hotelName}
+          </h1>
+          <div style="font-size: 12px; color: #475569; display: flex; align-items: center; gap: 8px;">
+            <span>📍 ${hotelCity} - ${hotelAddress}</span>
+          </div>
+          <div style="font-size: 11px; color: #64748b; margin-top: 4px;">
+            GPS: ${hotel.coordinates.lat.toFixed(4)}°, ${hotel.coordinates.lng.toFixed(4)}°
+          </div>
+        </div>
+
+        <div style="text-align: center; background: #0f172a; color: #ffffff; padding: 8px 14px; border-radius: 10px;">
+          <div style="font-size: 18px; font-weight: 900;">★ ${hotel.rating.toFixed(1)}</div>
+          <div style="font-size: 10px; color: #cbd5e1; margin-top: 2px;">
+            ${hotel.reviewCount} ${isAr ? 'تقييم موثق' : 'reviews'}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Highlights Badges -->
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px;">
+      <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px; text-align: center;">
+        <div style="font-size: 11px; font-weight: 700; color: #166534;">${isAr ? 'طعام حلال معتمد' : 'Halal Certified Food'}</div>
+        <div style="font-size: 10px; color: #15803d; margin-top: 2px;">${isAr ? 'خيارات حلال متوفرة' : 'Halal options available'}</div>
+      </div>
+      <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px; text-align: center;">
+        <div style="font-size: 11px; font-weight: 700; color: #1e40af;">${isAr ? 'تأشيرة إلكترونية E-Visa' : 'E-Visa Voucher'}</div>
+        <div style="font-size: 10px; color: #2563eb; margin-top: 2px;">${isAr ? 'دعوة سياحية رسمية' : 'Official confirmation'}</div>
+      </div>
+      <div style="background: #fefce8; border: 1px solid #fef08a; border-radius: 8px; padding: 10px; text-align: center;">
+        <div style="font-size: 11px; font-weight: 700; color: #854d0e;">${isAr ? 'سجادة صلاة وقبلة' : 'Prayer Rug & Qibla'}</div>
+        <div style="font-size: 10px; color: #a16207; margin-top: 2px;">${isAr ? 'جاهزة عند الطلب' : 'Available in room'}</div>
+      </div>
+      <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: 8px; padding: 10px; text-align: center;">
+        <div style="font-size: 11px; font-weight: 700; color: #9f1239;">${isAr ? 'دفع آمن بالريال' : 'Pay in GCC Currency'}</div>
+        <div style="font-size: 10px; color: #be123c; margin-top: 2px;">${currency} / Mada / Tamara</div>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div style="margin-bottom: 20px;">
+      <h3 style="font-size: 13px; font-weight: 800; text-transform: uppercase; color: #0f172a; margin-bottom: 6px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
+        ${isAr ? 'عن الفندق ومميزات الإقامة' : 'About the Property & Stays'}
+      </h3>
+      <p style="font-size: 11px; line-height: 1.6; color: #334155; margin: 0;">
+        ${isAr ? hotel.descriptionAr : hotel.descriptionEn}
+      </p>
+    </div>
+
+    <!-- Rooms and Rates Schedule -->
+    <div style="margin-bottom: 20px;">
+      <h3 style="font-size: 13px; font-weight: 800; text-transform: uppercase; color: #0f172a; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
+        ${isAr ? 'الغرف والأسعار المتاحة للحجز الفوري' : 'Available Rooms & Rate Plans'}
+      </h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+        <thead>
+          <tr style="background: #f1f5f9; text-align: ${isAr ? 'right' : 'left'};">
+            <th style="padding: 8px 12px; font-weight: 700; color: #475569;">${isAr ? 'فئة الغرفة' : 'Room Category'}</th>
+            <th style="padding: 8px 12px; font-weight: 700; color: #475569;">${isAr ? 'خطة الوجبات والإلغاء' : 'Meal & Cancellation'}</th>
+            <th style="padding: 8px 12px; font-weight: 700; color: #475569; text-align: ${isAr ? 'left' : 'right'};">${isAr ? 'السعر' : 'Price'}</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${roomsRows}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Hotel Policies & Proximity -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+        <h4 style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #0f172a; margin: 0 0 6px 0;">
+          ${isAr ? 'سياسات الفندق' : 'Hotel Policies'}
+        </h4>
+        <div style="font-size: 11px; color: #475569; line-height: 1.5;">
+          • ${isAr ? 'تسجيل الوصول من:' : 'Check-in from:'} <strong>${hotel.policies.checkInTime}</strong><br>
+          • ${isAr ? 'تسجيل المغادرة حتى:' : 'Check-out until:'} <strong>${hotel.policies.checkOutTime}</strong><br>
+          • ${isAr ? 'سياسة الإلغاء:' : 'Cancellation:'} ${hotel.policies.freeCancellationHours > 0 ? (isAr ? `إلغاء مجاني حتى ${hotel.policies.freeCancellationHours} ساعة قبل الوصول` : `Free cancellation up to ${hotel.policies.freeCancellationHours}h prior`) : (isAr ? 'غير قابل للاسترداد' : 'Non-refundable')}
+        </div>
+      </div>
+
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+        <h4 style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #0f172a; margin: 0 0 6px 0;">
+          ${isAr ? 'معالم ومواقع قريبة' : 'Nearby Highlights'}
+        </h4>
+        <ul style="margin: 0; padding-${isAr ? 'right' : 'left'}: 16px;">
+          ${landmarksHtml}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="border-top: 1px solid #cbd5e1; padding-top: 14px; display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: #64748b;">
+      <div>
+        <strong>RussiaBooking GCC Portal</strong> • ${isAr ? 'دعم العملاء العربي 24/7' : '24/7 Arabic Concierge Support'}
+        <br>
+        ${isAr ? 'معتمد رسمياً من وزارة التنمية الاقتصادية الروسية لبرنامج التأشيرة الإلكترونية الموحدة.' : 'Official accredited partner under Russian Ministry of Economic Development E-Visa regulations.'}
+      </div>
+      <div style="text-align: ${isAr ? 'left' : 'right'};">
+        <div style="font-weight: 700; color: #0f172a;">https://russiabooking.com</div>
+        <div>ID: ${hotel.id}</div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(container);
+
+  try {
+    const canvas = await html2canvas(container, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+    });
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.98);
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+      compress: true,
+    });
+
+    const pdfWidth = 210;
+    const pdfHeight = 297;
+    const margin = 10;
+    const contentWidth = pdfWidth - margin * 2;
+    const contentHeight = (canvas.height * contentWidth) / canvas.width;
+
+    if (contentHeight <= pdfHeight - margin * 2) {
+      pdf.addImage(imgData, 'JPEG', margin, margin, contentWidth, contentHeight, undefined, 'FAST');
+    } else {
+      let position = margin;
+      let remainingHeight = contentHeight;
+      const pageUsableHeight = pdfHeight - margin * 2;
+      pdf.addImage(imgData, 'JPEG', margin, position, contentWidth, contentHeight, undefined, 'FAST');
+      remainingHeight -= pageUsableHeight;
+      while (remainingHeight > 0) {
+        position -= pageUsableHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', margin, position, contentWidth, contentHeight, undefined, 'FAST');
+        remainingHeight -= pageUsableHeight;
+      }
+    }
+
+    const safeHotelName = hotel.nameEn.replace(/[^a-zA-Z0-9]/g, '-');
+    const filename = `RussiaBooking-Factsheet-${safeHotelName}.pdf`;
+    pdf.save(filename);
+    return true;
+  } catch (error) {
+    console.error('Hotel PDF generation failed:', error);
+    window.print();
+    return false;
+  } finally {
+    if (container.parentNode) {
+      container.parentNode.removeChild(container);
+    }
+  }
+}
+
+/**
+ * Generates and downloads a side-by-side Hotel Comparison Table PDF
+ */
+export async function downloadComparisonPdf(
+  hotels: Hotel[],
+  lang: Language = 'ar',
+  currency: SupportedCurrency = 'SAR'
+): Promise<boolean> {
+  const isAr = lang === 'ar';
+  const dateStr = new Date().toLocaleDateString(isAr ? 'ar-SA' : 'en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  const container = document.createElement('div');
+  container.style.position = 'fixed';
+  container.style.top = '-10000px';
+  container.style.left = '-10000px';
+  container.style.width = '1123px'; // A4 Landscape 1123px x 794px
+  container.style.minHeight = '794px';
+  container.style.backgroundColor = '#ffffff';
+  container.style.color = '#0f172a';
+  container.style.fontFamily = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Cairo", "Plus Jakarta Sans", sans-serif';
+  container.style.boxSizing = 'border-box';
+  container.style.padding = '36px 40px';
+  container.style.zIndex = '-9999';
+  container.dir = isAr ? 'rtl' : 'ltr';
+
+  const hotelCols = hotels.map(hotel => `
+    <th style="padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; width: ${Math.floor(100 / (hotels.length + 1))}%; text-align: center; vertical-align: top;">
+      <div style="color: #f59e0b; font-size: 11px; margin-bottom: 4px;">${'★'.repeat(hotel.stars)}</div>
+      <div style="font-weight: 800; font-size: 14px; color: #0f172a;">${isAr ? hotel.nameAr : hotel.nameEn}</div>
+      <div style="font-size: 11px; color: #64748b; margin-top: 2px;">${isAr ? hotel.cityAr : hotel.city}</div>
+      <div style="display: inline-block; background: #0f172a; color: white; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: bold; margin-top: 6px;">
+        ★ ${hotel.rating.toFixed(1)} (${hotel.reviewCount})
+      </div>
+    </th>
+  `).join('');
+
+  const priceRow = hotels.map(h => `
+    <td style="padding: 12px; border: 1px solid #e2e8f0; text-align: center; font-weight: 800; font-size: 14px; color: #e11d48;">
+      ${CurrencyService.format(h.minPriceRub, currency, lang)}
+      <div style="font-size: 10px; color: #94a3b8; font-weight: normal;">${h.minPriceRub.toLocaleString()} ₽</div>
+    </td>
+  `).join('');
+
+  const halalRow = hotels.map(h => `
+    <td style="padding: 10px; border: 1px solid #e2e8f0; text-align: center; font-size: 12px;">
+      ${h.policies.halalCertifiedFood ? `<span style="color: #059669; font-weight: bold;">✓ ${isAr ? 'معتمد 100%' : 'Certified 100%'}</span>` : (isAr ? 'عند الطلب' : 'On Request')}
+    </td>
+  `).join('');
+
+  const visaRow = hotels.map(() => `
+    <td style="padding: 10px; border: 1px solid #e2e8f0; text-align: center; font-size: 12px; color: #2563eb; font-weight: bold;">
+      ✓ ${isAr ? 'دعوة معتمدة مجانية' : 'Official E-Visa Voucher'}
+    </td>
+  `).join('');
+
+  const cancelRow = hotels.map(h => `
+    <td style="padding: 10px; border: 1px solid #e2e8f0; text-align: center; font-size: 12px;">
+      ${h.policies.freeCancellationHours > 0 ? `<span style="color: #059669; font-weight: bold;">✓ ${isAr ? `إلغاء مجاني (${h.policies.freeCancellationHours}س)` : `Free (${h.policies.freeCancellationHours}h)`}</span>` : (isAr ? 'غير مسترد' : 'Non-refundable')}
+    </td>
+  `).join('');
+
+  const addressRow = hotels.map(h => `
+    <td style="padding: 10px; border: 1px solid #e2e8f0; text-align: center; font-size: 11px; color: #475569;">
+      ${isAr ? h.addressAr : h.addressEn}
+    </td>
+  `).join('');
+
+  container.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0f172a; padding-bottom: 14px; margin-bottom: 20px;">
+      <div>
+        <div style="font-size: 22px; font-weight: 900; color: #0f172a;">
+          Russia<span style="color: #e11d48;">Booking</span>.com
+        </div>
+        <div style="font-size: 11px; font-weight: 700; color: #64748b;">
+          ${isAr ? 'تقرير مقارنة الفنادق الروسية للمسافرين الخليجيين' : 'Russian Hotel Side-by-Side Comparison Dossier'}
+        </div>
+      </div>
+      <div style="text-align: ${isAr ? 'left' : 'right'}; font-size: 11px; color: #64748b;">
+        <div>${isAr ? 'تاريخ التقرير:' : 'Generated:'} ${dateStr}</div>
+        <div>${isAr ? 'العملة المعروضة:' : 'Currency:'} <strong>${currency}</strong></div>
+      </div>
+    </div>
+
+    <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+      <thead>
+        <tr>
+          <th style="padding: 12px; background: #0f172a; color: white; text-align: ${isAr ? 'right' : 'left'}; width: 20%;">
+            ${isAr ? 'معايير المقارنة' : 'Comparison Criteria'}
+          </th>
+          ${hotelCols}
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold; background: #f8fafc;">
+            ${isAr ? 'السعر للّيلة' : 'Rate / Night'}
+          </td>
+          ${priceRow}
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold; background: #f8fafc;">
+            ${isAr ? 'الطعام الحلال' : 'Halal Dining'}
+          </td>
+          ${halalRow}
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold; background: #f8fafc;">
+            ${isAr ? 'التأشيرة الروسية' : 'Russian E-Visa'}
+          </td>
+          ${visaRow}
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold; background: #f8fafc;">
+            ${isAr ? 'سياسة الإلغاء' : 'Cancellation'}
+          </td>
+          ${cancelRow}
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold; background: #f8fafc;">
+            ${isAr ? 'العنوان' : 'Address'}
+          </td>
+          ${addressRow}
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top: 30px; border-top: 1px solid #cbd5e1; padding-top: 12px; display: flex; justify-content: space-between; font-size: 10px; color: #64748b;">
+      <div>RussiaBooking.com • ${isAr ? 'جميع الأسعار المعروضة شاملة الضرائب وقابلة للتأكيد الفوري' : 'All rates displayed include taxes and instant confirmation'}</div>
+      <div>https://russiabooking.com</div>
+    </div>
+  `;
+
+  document.body.appendChild(container);
+
+  try {
+    const canvas = await html2canvas(container, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+    });
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.98);
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4',
+      compress: true,
+    });
+
+    const pdfWidth = 297;
+    const margin = 10;
+    const contentWidth = pdfWidth - margin * 2;
+    const contentHeight = (canvas.height * contentWidth) / canvas.width;
+
+    pdf.addImage(imgData, 'JPEG', margin, margin, contentWidth, contentHeight, undefined, 'FAST');
+    pdf.save(`RussiaBooking-Comparison-${Date.now()}.pdf`);
+    return true;
+  } catch (err) {
+    console.error('Comparison PDF failed:', err);
+    window.print();
+    return false;
+  } finally {
+    if (container.parentNode) {
+      container.parentNode.removeChild(container);
+    }
+  }
+}
+
