@@ -458,7 +458,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       required
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-xs font-sans text-slate-900 dark:text-white focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                      className="w-full min-h-[44px] rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-xs font-sans text-slate-900 dark:text-white focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
                     />
                   </div>
 
@@ -471,7 +471,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-xs font-sans text-slate-900 dark:text-white focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                      className="w-full min-h-[44px] rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-xs font-sans text-slate-900 dark:text-white focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
                     />
                   </div>
                 </div>
@@ -490,7 +490,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="+966 50 123 4567"
                       required
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-xs font-numeric font-medium tracking-wide text-slate-900 dark:text-white focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                      className="w-full min-h-[44px] rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-xs font-numeric font-medium tracking-wide text-slate-900 dark:text-white focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
                     />
                     <p className="mt-1 text-[11px] font-sans text-slate-400">
                       {isArabic ? 'يشمل مفتاح الدولة للتواصل الفوري عبر واتساب' : 'Include country code for instant WhatsApp notifications'}
@@ -512,7 +512,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                           key={item.code}
                           type="button"
                           onClick={() => setPreferredLanguage(item.code as 'ar' | 'en' | 'ru')}
-                          className={`p-2.5 rounded-xl border text-xs font-medium font-sans text-center transition ${
+                          className={`min-h-[44px] p-2.5 rounded-xl border text-xs font-medium font-sans text-center transition active:scale-95 ${
                             preferredLanguage === item.code
                               ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-500 text-rose-600 dark:text-rose-400 font-bold'
                               : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
@@ -535,7 +535,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                     <button
                       type="button"
                       onClick={() => setPreferredContactChannel('whatsapp')}
-                      className={`flex items-center gap-2 p-2.5 rounded-xl border text-xs font-medium font-sans text-start transition ${
+                      className={`min-h-[44px] flex items-center gap-2 p-2.5 rounded-xl border text-xs font-medium font-sans text-start transition active:scale-95 ${
                         preferredContactChannel === 'whatsapp'
                           ? 'bg-emerald-500/10 border-emerald-500 text-emerald-700 dark:text-emerald-300 font-bold'
                           : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
@@ -548,7 +548,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                     <button
                       type="button"
                       onClick={() => setPreferredContactChannel('sms')}
-                      className={`flex items-center gap-2 p-2.5 rounded-xl border text-xs font-medium font-sans text-start transition ${
+                      className={`min-h-[44px] flex items-center gap-2 p-2.5 rounded-xl border text-xs font-medium font-sans text-start transition active:scale-95 ${
                         preferredContactChannel === 'sms'
                           ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-500 text-rose-600 dark:text-rose-400 font-bold'
                           : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
@@ -561,7 +561,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                     <button
                       type="button"
                       onClick={() => setPreferredContactChannel('email')}
-                      className={`flex items-center gap-2 p-2.5 rounded-xl border text-xs font-medium font-sans text-start transition ${
+                      className={`min-h-[44px] flex items-center gap-2 p-2.5 rounded-xl border text-xs font-medium font-sans text-start transition active:scale-95 ${
                         preferredContactChannel === 'email'
                           ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-500 text-blue-600 dark:text-blue-400 font-bold'
                           : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
@@ -582,7 +582,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                       type="text"
                       value={nationality}
                       onChange={(e) => setNationality(e.target.value)}
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-xs font-sans text-slate-900 dark:text-white focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                      className="w-full min-h-[44px] rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-xs font-sans text-slate-900 dark:text-white focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
                     />
                   </div>
 
@@ -594,7 +594,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                       type="text"
                       value={country}
                       onChange={(e) => setCountry(e.target.value)}
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-xs font-sans text-slate-900 dark:text-white focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                      className="w-full min-h-[44px] rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-xs font-sans text-slate-900 dark:text-white focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
                     />
                   </div>
                 </div>
@@ -608,7 +608,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                     value={passportNumber}
                     onChange={(e) => setPassportNumber(e.target.value)}
                     placeholder="e.g. N12345678"
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-xs font-numeric font-medium tracking-wide text-slate-900 dark:text-white focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 uppercase"
+                    className="w-full min-h-[44px] rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-xs font-numeric font-medium tracking-wide text-slate-900 dark:text-white focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 uppercase"
                   />
                 </div>
 
@@ -623,7 +623,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold font-sans transition shadow-xs disabled:opacity-50"
+                    className="min-h-[44px] w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold font-sans transition shadow-xs disabled:opacity-50 active:scale-95"
                   >
                     <Save className="w-4 h-4" />
                     <span>{isSaving ? t.profile.saving : t.profile.saveChanges}</span>

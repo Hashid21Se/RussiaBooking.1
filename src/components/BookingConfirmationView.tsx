@@ -281,21 +281,21 @@ export const BookingConfirmationView: React.FC<BookingConfirmationViewProps> = (
       )}
 
       {/* Action Buttons */}
-      <div className="flex flex-wrap items-center justify-between gap-4 print:hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
         <button
           onClick={onGoHome}
-          className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+          className="min-h-[44px] flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95"
         >
           {lang === 'ar' ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
           <span>{lang === 'ar' ? 'العودة للرئيسية' : 'Return to Home'}</span>
         </button>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
           <button
             id="download-pdf-voucher-btn"
             onClick={handleDownloadPdf}
             disabled={isDownloadingPdf}
-            className="flex items-center gap-2 rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40 px-4 py-2.5 text-xs font-bold text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition shadow-sm disabled:opacity-60 cursor-pointer"
+            className="min-h-[44px] flex-1 sm:flex-initial flex items-center justify-center gap-2 rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40 px-4 py-2.5 text-xs sm:text-sm font-bold text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition shadow-sm disabled:opacity-60 cursor-pointer active:scale-95"
           >
             {isDownloadingPdf ? (
               <>
@@ -313,7 +313,7 @@ export const BookingConfirmationView: React.FC<BookingConfirmationViewProps> = (
           <button
             id="print-voucher-btn"
             onClick={handlePrint}
-            className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-sm"
+            className="min-h-[44px] flex-1 sm:flex-initial flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-sm active:scale-95"
           >
             <Printer className="w-4 h-4 text-slate-500" />
             <span>{t.voucher.printVoucher}</span>
@@ -322,7 +322,7 @@ export const BookingConfirmationView: React.FC<BookingConfirmationViewProps> = (
           <button
             id="view-my-bookings-btn"
             onClick={onViewMyBookings}
-            className="flex items-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white dark:bg-amber-500 dark:hover:bg-amber-600 dark:text-slate-950 px-5 py-2.5 text-xs font-bold shadow-md transition"
+            className="min-h-[44px] w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white dark:bg-amber-500 dark:hover:bg-amber-600 dark:text-slate-950 px-5 py-2.5 text-xs sm:text-sm font-bold shadow-md transition active:scale-95"
           >
             <Briefcase className="w-4 h-4" />
             <span>{t.nav.myBookings}</span>

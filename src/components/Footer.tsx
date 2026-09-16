@@ -23,7 +23,7 @@ export const Footer: React.FC<FooterProps> = ({ lang, onNavigate, onSelectCity }
   const t = translations[lang];
 
   return (
-    <footer className="border-t border-[#E5E7EB] dark:border-slate-800 bg-white dark:bg-[#0F141C] text-[#6B7280] dark:text-slate-400 transition-colors pt-12 pb-16">
+    <footer className="border-t border-[#E5E7EB] dark:border-slate-800 bg-white dark:bg-[#0F141C] text-[#6B7280] dark:text-slate-400 transition-colors pt-12 pb-28 sm:pb-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-10 border-b border-gray-100 dark:border-slate-800">
           {/* Column 1: Brand & Identity */}

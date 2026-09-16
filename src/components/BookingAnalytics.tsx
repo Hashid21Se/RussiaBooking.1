@@ -560,7 +560,7 @@ export const BookingAnalytics: React.FC<BookingAnalyticsProps> = ({
             </div>
 
             {/* Recharts Container */}
-            <div className="w-full h-64 sm:h-72">
+            <div className="w-full min-w-0 h-64 sm:h-72">
               <ResponsiveContainer width="100%" height="100%">
                 {activeTab === 'avgSpend' ? (
                   <BarChart

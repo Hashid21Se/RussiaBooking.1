@@ -444,7 +444,7 @@ export const SearchResultsView: React.FC<SearchResultsViewProps> = ({
       {comparedHotels.length > 0 && (
         <div 
           dir={lang === 'ar' ? 'rtl' : 'ltr'}
-          className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:end-8 z-40 bg-slate-950/95 dark:bg-slate-900/95 text-white p-3.5 sm:p-4 rounded-3xl shadow-2xl border border-slate-800 backdrop-blur-md flex items-center gap-3 sm:gap-4 animate-in slide-in-from-bottom-5 duration-200"
+          className="fixed bottom-20 sm:bottom-6 inset-x-4 sm:inset-x-auto sm:end-8 z-40 bg-slate-950/95 dark:bg-slate-900/95 text-white p-3.5 sm:p-4 rounded-3xl shadow-2xl border border-slate-800 backdrop-blur-md flex items-center gap-3 sm:gap-4 animate-in slide-in-from-bottom-5 duration-200"
         >
           <div className="flex -space-x-2 rtl:space-x-reverse overflow-hidden">
             {comparedHotels.map((h) => (
@@ -473,13 +473,13 @@ export const SearchResultsView: React.FC<SearchResultsViewProps> = ({
           <div className="flex items-center gap-2 ms-auto">
             <button
               onClick={() => setIsCompareModalOpen(true)}
-              className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold shadow-md transition active:scale-95 whitespace-nowrap"
+              className="min-h-[40px] px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold shadow-md transition active:scale-95 whitespace-nowrap"
             >
               {t.compare.openModal}
             </button>
             <button
               onClick={handleClearCompare}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white transition"
+              className="min-h-[40px] min-w-[40px] flex items-center justify-center p-1.5 rounded-lg text-slate-400 hover:text-white transition"
               title={t.compare.clearAll}
             >
               <X className="w-4 h-4" />
@@ -503,10 +503,14 @@ export const SearchResultsView: React.FC<SearchResultsViewProps> = ({
 
       {/* Mobile Filters Modal */}
       {mobileFiltersOpen && (
-        <div className="fixed inset-0 z-50 flex bg-black/60 backdrop-blur-sm lg:hidden">
+        <div 
+          className="fixed inset-0 z-50 flex bg-black/60 backdrop-blur-sm lg:hidden animate-in fade-in duration-200"
+          onClick={() => setMobileFiltersOpen(false)}
+        >
           <div 
-            className="w-full max-w-xs ms-auto h-full overflow-y-auto bg-white dark:bg-slate-900 p-5 shadow-2xl flex flex-col justify-between"
+            className="w-full max-w-xs sm:max-w-sm ms-auto h-full overflow-y-auto bg-white dark:bg-slate-900 p-5 shadow-2xl flex flex-col justify-between"
             dir={lang === 'ar' ? 'rtl' : 'ltr'}
+            onClick={(e) => e.stopPropagation()}
           >
             <div>
               <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800 mb-4">
@@ -516,7 +520,8 @@ export const SearchResultsView: React.FC<SearchResultsViewProps> = ({
                 </h3>
                 <button
                   onClick={() => setMobileFiltersOpen(false)}
-                  className="rounded-full p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                  aria-label="Close filters"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -524,10 +529,10 @@ export const SearchResultsView: React.FC<SearchResultsViewProps> = ({
               {renderFiltersContent()}
             </div>
 
-            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 mt-6">
+            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 mt-6 pb-6">
               <button
                 onClick={() => setMobileFiltersOpen(false)}
-                className="w-full rounded-xl bg-amber-500 py-3 text-xs font-bold text-slate-950 shadow-md"
+                className="w-full min-h-[44px] rounded-xl bg-amber-500 hover:bg-amber-600 py-3 text-xs font-bold text-slate-950 shadow-md transition active:scale-98"
               >
                 {lang === 'ar' ? `عرض النتائج (${hotels.length})` : `Show Results (${hotels.length})`}
               </button>

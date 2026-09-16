@@ -426,10 +426,10 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
           <button
             onClick={() => setActiveTab('SECURITY')}
-            className="flex items-center gap-1.5 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/20 px-3.5 py-2 text-xs font-bold text-rose-700 dark:text-rose-300 hover:bg-rose-100/50 transition shadow-sm"
+            className="min-h-[44px] flex items-center gap-1.5 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/20 px-3.5 py-2 text-xs font-bold text-rose-700 dark:text-rose-300 hover:bg-rose-100/50 transition shadow-sm active:scale-95"
           >
             <ShieldAlert className="w-3.5 h-3.5 text-rose-600" />
             <span>{lang === 'ar' ? 'تقرير الأمان OWASP' : 'Security Audit'}</span>
@@ -438,7 +438,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
           <a
             href="/api/admin/reports/csv"
             download
-            className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-sm"
+            className="min-h-[44px] flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-sm active:scale-95"
           >
             <Download className="w-3.5 h-3.5 text-amber-500" />
             <span>{t.admin.exportCsv}</span>
@@ -446,7 +446,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
 
           <button
             onClick={fetchAdminData}
-            className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95"
             title="Refresh Data"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -457,14 +457,14 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
               sessionStorage.removeItem('rb_admin_2fa_token');
               setIs2FAAuthenticated(false);
             }}
-            className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition"
+            className="min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition active:scale-95"
           >
             {lang === 'ar' ? 'قفل الجلسة' : 'Lock Session'}
           </button>
 
           <button
             onClick={onExitAdmin}
-            className="rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-3.5 py-2 text-xs font-bold hover:bg-slate-800 dark:hover:bg-slate-100 transition shadow-sm"
+            className="min-h-[44px] rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-3.5 py-2 text-xs font-bold hover:bg-slate-800 dark:hover:bg-slate-100 transition shadow-sm active:scale-95"
           >
             {t.admin.exitAdmin}
           </button>
@@ -525,10 +525,10 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
       )}
 
       {/* Tabs Navigation */}
-      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 text-xs sm:text-sm font-bold overflow-x-auto">
+      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 text-xs sm:text-sm font-bold overflow-x-auto no-scrollbar">
         <button
           onClick={() => setActiveTab('METRICS')}
-          className={`pb-3 px-2 border-b-2 transition whitespace-nowrap ${
+          className={`min-h-[44px] pb-3 px-3 border-b-2 transition whitespace-nowrap shrink-0 flex items-center ${
             activeTab === 'METRICS'
               ? 'border-rose-600 text-rose-600 dark:text-rose-400'
               : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
@@ -538,7 +538,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
         </button>
         <button
           onClick={() => setActiveTab('BOOKINGS')}
-          className={`pb-3 px-2 border-b-2 transition whitespace-nowrap ${
+          className={`min-h-[44px] pb-3 px-3 border-b-2 transition whitespace-nowrap shrink-0 flex items-center ${
             activeTab === 'BOOKINGS'
               ? 'border-rose-600 text-rose-600 dark:text-rose-400'
               : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
@@ -548,7 +548,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
         </button>
         <button
           onClick={() => setActiveTab('HOTELS')}
-          className={`pb-3 px-2 border-b-2 transition whitespace-nowrap ${
+          className={`min-h-[44px] pb-3 px-3 border-b-2 transition whitespace-nowrap shrink-0 flex items-center ${
             activeTab === 'HOTELS'
               ? 'border-rose-600 text-rose-600 dark:text-rose-400'
               : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
@@ -558,7 +558,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
         </button>
         <button
           onClick={() => setActiveTab('SETTLEMENTS')}
-          className={`pb-3 px-2 border-b-2 transition whitespace-nowrap ${
+          className={`min-h-[44px] pb-3 px-3 border-b-2 transition whitespace-nowrap shrink-0 flex items-center ${
             activeTab === 'SETTLEMENTS'
               ? 'border-rose-600 text-rose-600 dark:text-rose-400'
               : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
@@ -568,7 +568,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
         </button>
         <button
           onClick={() => setActiveTab('AUDIT')}
-          className={`pb-3 px-2 border-b-2 transition whitespace-nowrap ${
+          className={`min-h-[44px] pb-3 px-3 border-b-2 transition whitespace-nowrap shrink-0 flex items-center ${
             activeTab === 'AUDIT'
               ? 'border-rose-600 text-rose-600 dark:text-rose-400'
               : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
@@ -578,7 +578,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
         </button>
         <button
           onClick={() => setActiveTab('SECURITY')}
-          className={`pb-3 px-2 border-b-2 transition whitespace-nowrap flex items-center gap-1.5 ${
+          className={`min-h-[44px] pb-3 px-3 border-b-2 transition whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
             activeTab === 'SECURITY'
               ? 'border-rose-600 text-rose-600 dark:text-rose-400'
               : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'

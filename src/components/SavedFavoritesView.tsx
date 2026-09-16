@@ -52,7 +52,7 @@ export const SavedFavoritesView: React.FC<SavedFavoritesViewProps> = ({
           </p>
           <button
             onClick={onExploreHotels}
-            className="rounded-xl bg-slate-900 dark:bg-amber-500 dark:text-slate-950 text-white px-5 py-2.5 text-xs font-bold shadow-md transition"
+            className="min-h-[44px] rounded-xl bg-slate-900 dark:bg-amber-500 dark:text-slate-950 text-white px-5 py-2.5 text-xs font-bold shadow-md transition active:scale-95 inline-flex items-center justify-center"
           >
             {lang === 'ar' ? 'استكشف فنادق روسيا الآن' : 'Explore Hotels Now'}
           </button>

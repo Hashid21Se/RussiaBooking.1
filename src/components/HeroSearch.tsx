@@ -76,9 +76,9 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ lang, onSearch, onSelect
         {/* Search Box Card */}
         <div className="rounded-3xl bg-white dark:bg-[#151C28] p-6 sm:p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-[#F3F4F6] dark:border-slate-800 text-[#111827] dark:text-white transition-all">
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-3.5">
               {/* Destination Input */}
-              <div className="md:col-span-4 relative">
+              <div className="sm:col-span-2 md:col-span-4 relative">
                 <label className="block text-[10px] uppercase tracking-widest font-bold text-[#9CA3AF] dark:text-slate-400 mb-1.5">
                   {t.hero.searchDestination}
                 </label>
@@ -90,7 +90,7 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ lang, onSearch, onSelect
                     id="search-city-select"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full rounded-2xl border border-[#E5E7EB] dark:border-slate-700 bg-white dark:bg-slate-900 ps-10 pe-3 py-3 text-sm font-semibold text-[#111827] dark:text-white focus:border-[#E11D48] focus:outline-none transition"
+                    className="w-full min-h-[44px] rounded-2xl border border-[#E5E7EB] dark:border-slate-700 bg-white dark:bg-slate-900 ps-10 pe-3 py-2.5 text-sm font-semibold text-[#111827] dark:text-white focus:border-[#E11D48] focus:outline-none transition"
                   >
                     <option value="">{t.hero.allCities}</option>
                     <option value="Moscow">{lang === 'ar' ? 'موسكو (Moscow)' : 'Moscow'}</option>
@@ -103,12 +103,12 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ lang, onSearch, onSelect
               </div>
 
               {/* Check-In Date */}
-              <div className="md:col-span-2 relative">
+              <div className="col-span-1 md:col-span-2 relative">
                 <label className="block text-[10px] uppercase tracking-widest font-bold text-[#9CA3AF] dark:text-slate-400 mb-1.5">
                   {t.hero.checkIn}
                 </label>
                 <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3.5 text-[#9CA3AF]">
+                  <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3 text-[#9CA3AF]">
                     <Calendar className="w-4 h-4" />
                   </div>
                   <input
@@ -116,18 +116,18 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ lang, onSearch, onSelect
                     type="date"
                     value={checkIn}
                     onChange={(e) => setCheckIn(e.target.value)}
-                    className="w-full rounded-2xl border border-[#E5E7EB] dark:border-slate-700 bg-white dark:bg-slate-900 ps-9 pe-2 py-3 text-xs sm:text-sm font-semibold text-[#111827] dark:text-white focus:border-[#E11D48] focus:outline-none transition"
+                    className="w-full min-h-[44px] rounded-2xl border border-[#E5E7EB] dark:border-slate-700 bg-white dark:bg-slate-900 ps-9 pe-2 py-2.5 text-xs sm:text-sm font-semibold text-[#111827] dark:text-white focus:border-[#E11D48] focus:outline-none transition"
                   />
                 </div>
               </div>
 
               {/* Check-Out Date */}
-              <div className="md:col-span-2 relative">
+              <div className="col-span-1 md:col-span-2 relative">
                 <label className="block text-[10px] uppercase tracking-widest font-bold text-[#9CA3AF] dark:text-slate-400 mb-1.5">
                   {t.hero.checkOut}
                 </label>
                 <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3.5 text-[#9CA3AF]">
+                  <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3 text-[#9CA3AF]">
                     <Calendar className="w-4 h-4" />
                   </div>
                   <input
@@ -135,13 +135,13 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ lang, onSearch, onSelect
                     type="date"
                     value={checkOut}
                     onChange={(e) => setCheckOut(e.target.value)}
-                    className="w-full rounded-2xl border border-[#E5E7EB] dark:border-slate-700 bg-white dark:bg-slate-900 ps-9 pe-2 py-3 text-xs sm:text-sm font-semibold text-[#111827] dark:text-white focus:border-[#E11D48] focus:outline-none transition"
+                    className="w-full min-h-[44px] rounded-2xl border border-[#E5E7EB] dark:border-slate-700 bg-white dark:bg-slate-900 ps-9 pe-2 py-2.5 text-xs sm:text-sm font-semibold text-[#111827] dark:text-white focus:border-[#E11D48] focus:outline-none transition"
                   />
                 </div>
               </div>
 
               {/* Guests & Rooms */}
-              <div className="md:col-span-2 relative">
+              <div className="col-span-1 sm:col-span-1 md:col-span-2 relative">
                 <label className="block text-[10px] uppercase tracking-widest font-bold text-[#9CA3AF] dark:text-slate-400 mb-1.5">
                   {t.hero.guests}
                 </label>
@@ -149,87 +149,93 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ lang, onSearch, onSelect
                   id="search-guests-btn"
                   type="button"
                   onClick={() => setShowGuestsPopover(!showGuestsPopover)}
-                  className="w-full flex items-center justify-between rounded-2xl border border-[#E5E7EB] dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-3 text-xs sm:text-sm font-semibold text-[#111827] dark:text-slate-200"
+                  className="w-full min-h-[44px] flex items-center justify-between rounded-2xl border border-[#E5E7EB] dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 text-xs sm:text-sm font-semibold text-[#111827] dark:text-slate-200"
                 >
                   <span className="flex items-center gap-1.5 truncate">
                     <Users className="w-4 h-4 text-[#9CA3AF] shrink-0" />
-                    <span>{adults + children} {t.common.guestsPlural}, {rooms} {t.hero.rooms}</span>
+                    <span className="truncate">{adults + children} {t.common.guestsPlural}, {rooms} {t.hero.rooms}</span>
                   </span>
                 </button>
 
                 {/* Popover */}
                 {showGuestsPopover && (
-                  <div className="absolute z-30 start-0 mt-2 w-64 rounded-2xl border border-[#E5E7EB] dark:border-slate-700 bg-white p-4 shadow-xl dark:bg-slate-900">
-                    <div className="space-y-3 text-xs">
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-slate-700 dark:text-slate-300">{t.hero.adults}</span>
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setAdults(Math.max(1, adults - 1))}
-                            className="h-7 w-7 rounded-lg border border-[#E5E7EB] dark:border-slate-600 flex items-center justify-center font-bold text-[#111827] dark:text-white"
-                          >-</button>
-                          <span className="w-5 text-center font-bold">{adults}</span>
-                          <button
-                            type="button"
-                            onClick={() => setAdults(adults + 1)}
-                            className="h-7 w-7 rounded-lg border border-[#E5E7EB] dark:border-slate-600 flex items-center justify-center font-bold text-[#111827] dark:text-white"
-                          >+</button>
+                  <>
+                    <div 
+                      className="fixed inset-0 z-20" 
+                      onClick={() => setShowGuestsPopover(false)} 
+                    />
+                    <div className="absolute z-30 start-0 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-2xl border border-[#E5E7EB] dark:border-slate-700 bg-white p-4 shadow-xl dark:bg-slate-900">
+                      <div className="space-y-3.5 text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-slate-700 dark:text-slate-300">{t.hero.adults}</span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setAdults(Math.max(1, adults - 1))}
+                              className="h-9 w-9 rounded-xl border border-[#E5E7EB] dark:border-slate-600 flex items-center justify-center font-bold text-[#111827] dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition"
+                            >-</button>
+                            <span className="w-6 text-center font-bold text-sm">{adults}</span>
+                            <button
+                              type="button"
+                              onClick={() => setAdults(adults + 1)}
+                              className="h-9 w-9 rounded-xl border border-[#E5E7EB] dark:border-slate-600 flex items-center justify-center font-bold text-[#111827] dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition"
+                            >+</button>
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-slate-700 dark:text-slate-300">{t.hero.children}</span>
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setChildren(Math.max(0, children - 1))}
-                            className="h-7 w-7 rounded-lg border border-[#E5E7EB] dark:border-slate-600 flex items-center justify-center font-bold text-[#111827] dark:text-white"
-                          >-</button>
-                          <span className="w-5 text-center font-bold">{children}</span>
-                          <button
-                            type="button"
-                            onClick={() => setChildren(children + 1)}
-                            className="h-7 w-7 rounded-lg border border-[#E5E7EB] dark:border-slate-600 flex items-center justify-center font-bold text-[#111827] dark:text-white"
-                          >+</button>
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-slate-700 dark:text-slate-300">{t.hero.children}</span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setChildren(Math.max(0, children - 1))}
+                              className="h-9 w-9 rounded-xl border border-[#E5E7EB] dark:border-slate-600 flex items-center justify-center font-bold text-[#111827] dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition"
+                            >-</button>
+                            <span className="w-6 text-center font-bold text-sm">{children}</span>
+                            <button
+                              type="button"
+                              onClick={() => setChildren(children + 1)}
+                              className="h-9 w-9 rounded-xl border border-[#E5E7EB] dark:border-slate-600 flex items-center justify-center font-bold text-[#111827] dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition"
+                            >+</button>
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-slate-700 dark:text-slate-300">{t.hero.rooms}</span>
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setRooms(Math.max(1, rooms - 1))}
-                            className="h-7 w-7 rounded-lg border border-[#E5E7EB] dark:border-slate-600 flex items-center justify-center font-bold text-[#111827] dark:text-white"
-                          >-</button>
-                          <span className="w-5 text-center font-bold">{rooms}</span>
-                          <button
-                            type="button"
-                            onClick={() => setRooms(rooms + 1)}
-                            className="h-7 w-7 rounded-lg border border-[#E5E7EB] dark:border-slate-600 flex items-center justify-center font-bold text-[#111827] dark:text-white"
-                          >+</button>
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-slate-700 dark:text-slate-300">{t.hero.rooms}</span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setRooms(Math.max(1, rooms - 1))}
+                              className="h-9 w-9 rounded-xl border border-[#E5E7EB] dark:border-slate-600 flex items-center justify-center font-bold text-[#111827] dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition"
+                            >-</button>
+                            <span className="w-6 text-center font-bold text-sm">{rooms}</span>
+                            <button
+                              type="button"
+                              onClick={() => setRooms(rooms + 1)}
+                              className="h-9 w-9 rounded-xl border border-[#E5E7EB] dark:border-slate-600 flex items-center justify-center font-bold text-[#111827] dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition"
+                            >+</button>
+                          </div>
                         </div>
-                      </div>
 
-                      <button
-                        type="button"
-                        onClick={() => setShowGuestsPopover(false)}
-                        className="w-full mt-2 rounded-xl bg-[#111827] hover:bg-black text-white dark:bg-[#E11D48] dark:hover:bg-[#BE123C] py-2 font-bold transition-colors"
-                      >
-                        {t.common.save}
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowGuestsPopover(false)}
+                          className="w-full min-h-[44px] mt-2 rounded-xl bg-[#111827] hover:bg-black text-white dark:bg-[#E11D48] dark:hover:bg-[#BE123C] py-2.5 font-bold transition-colors"
+                        >
+                          {t.common.save}
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  </>
                 )}
               </div>
 
               {/* Submit Button */}
-              <div className="md:col-span-2 flex items-end">
+              <div className="col-span-1 sm:col-span-1 md:col-span-2 flex items-end">
                 <button
                   id="search-submit-btn"
                   type="submit"
-                  className="w-full h-[46px] flex items-center justify-center gap-2 rounded-2xl bg-[#111827] hover:bg-black text-white dark:bg-[#E11D48] dark:hover:bg-[#BE123C] font-bold text-sm shadow-md transition-colors active:scale-98"
+                  className="w-full min-h-[44px] h-[46px] flex items-center justify-center gap-2 rounded-2xl bg-[#111827] hover:bg-black text-white dark:bg-[#E11D48] dark:hover:bg-[#BE123C] font-bold text-sm shadow-md transition-colors active:scale-98"
                 >
                   <Search className="w-4 h-4" />
                   <span>{t.hero.searchHotels}</span>

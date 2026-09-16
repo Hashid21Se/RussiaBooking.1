@@ -116,42 +116,48 @@ export const HotelDetailsView: React.FC<HotelDetailsViewProps> = ({
               </button>
 
               {currencyDropdownOpen && (
-                <div 
-                  className="absolute end-0 mt-2 w-48 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white p-1.5 shadow-xl dark:bg-slate-900 z-50 text-xs"
-                  dir={lang === 'ar' ? 'rtl' : 'ltr'}
-                >
-                  <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    {lang === 'ar' ? 'اختر عملة العرض' : 'Select Currency'}
-                  </div>
-                  {currencies.map((curr) => {
-                    const info = (CURRENCY_RATES as any)[curr];
-                    return (
-                      <button
-                        key={curr}
-                        id={`hotel-curr-option-${curr}`}
-                        onClick={() => {
-                          onCurrencyChange(curr);
-                          setCurrencyDropdownOpen(false);
-                        }}
-                        className={`min-h-[44px] w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-left transition ${
-                          currency === curr 
-                            ? 'bg-amber-500/10 font-bold text-amber-600 dark:text-amber-400' 
-                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                        }`}
-                      >
-                        <span className="flex items-center gap-2">
-                          <span className="font-mono font-bold">{curr}</span>
-                          <span className="text-slate-500 text-[11px]">
-                            {lang === 'ar' ? info?.nameAr : info?.nameEn}
+                <>
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setCurrencyDropdownOpen(false)} 
+                  />
+                  <div 
+                    className="absolute end-0 mt-2 w-48 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white p-1.5 shadow-xl dark:bg-slate-900 z-50 text-xs"
+                    dir={lang === 'ar' ? 'rtl' : 'ltr'}
+                  >
+                    <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      {lang === 'ar' ? 'اختر عملة العرض' : 'Select Currency'}
+                    </div>
+                    {currencies.map((curr) => {
+                      const info = (CURRENCY_RATES as any)[curr];
+                      return (
+                        <button
+                          key={curr}
+                          id={`hotel-curr-option-${curr}`}
+                          onClick={() => {
+                            onCurrencyChange(curr);
+                            setCurrencyDropdownOpen(false);
+                          }}
+                          className={`min-h-[44px] w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-left transition ${
+                            currency === curr 
+                              ? 'bg-amber-500/10 font-bold text-amber-600 dark:text-amber-400' 
+                              : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                          }`}
+                        >
+                          <span className="flex items-center gap-2">
+                            <span className="font-mono font-bold">{curr}</span>
+                            <span className="text-slate-500 text-[11px]">
+                              {lang === 'ar' ? info?.nameAr : info?.nameEn}
+                            </span>
                           </span>
-                        </span>
-                        <span className="font-semibold text-slate-400">
-                          {lang === 'ar' ? info?.symbolAr : info?.symbol}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
+                          <span className="font-semibold text-slate-400">
+                            {lang === 'ar' ? info?.symbolAr : info?.symbol}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
               )}
             </div>
           )}
@@ -517,8 +523,8 @@ export const HotelDetailsView: React.FC<HotelDetailsViewProps> = ({
                       </div>
                     </div>
 
-                    <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2 shrink-0">
-                      <div className="text-end">
+                    <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
+                      <div className="text-start sm:text-end">
                         <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
                           {CurrencyService.format(rate.pricePerNightRub, currency, lang)}
                         </div>
@@ -530,7 +536,7 @@ export const HotelDetailsView: React.FC<HotelDetailsViewProps> = ({
                       <button
                         id={`reserve-rate-${rate.id}`}
                         onClick={() => onSelectRoomAndRate(room, rate)}
-                        className="rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 px-5 py-2.5 text-xs sm:text-sm font-bold text-slate-950 shadow-md shadow-amber-500/20 active:scale-95 transition"
+                        className="min-h-[44px] min-w-[110px] flex items-center justify-center rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 px-5 py-2.5 text-xs sm:text-sm font-bold text-slate-950 shadow-md shadow-amber-500/20 active:scale-95 transition"
                       >
                         {t.hotelDetails.reserve}
                       </button>

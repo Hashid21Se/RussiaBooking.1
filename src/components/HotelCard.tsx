@@ -178,13 +178,13 @@ export const HotelCard: React.FC<HotelCardProps> = ({
               </h3>
 
               {/* City & Distance to landmark */}
-              <div className="flex items-center gap-1 text-xs text-[#6B7280] dark:text-slate-400 mt-1">
+              <div className="flex items-center gap-1 text-xs text-[#6B7280] dark:text-slate-400 mt-1 min-w-0">
                 <MapPin className="w-3.5 h-3.5 text-[#E11D48] shrink-0" />
-                <span className="font-semibold text-[#111827] dark:text-slate-300">
+                <span className="font-semibold text-[#111827] dark:text-slate-300 shrink-0">
                   {lang === 'ar' ? hotel.cityAr : hotel.city}
                 </span>
                 <span>•</span>
-                <span className="truncate">
+                <span className="truncate min-w-0">
                   {lang === 'ar' ? hotel.addressAr : hotel.addressEn}
                 </span>
               </div>
@@ -255,12 +255,12 @@ export const HotelCard: React.FC<HotelCardProps> = ({
         </div>
 
         {/* Bottom Price & Booking CTA */}
-        <div className="mt-4 pt-3.5 border-t border-gray-100 dark:border-slate-800 flex flex-col xs:flex-row sm:flex-row items-stretch xs:items-end sm:items-end justify-between gap-3.5">
+        <div className="mt-4 pt-3.5 border-t border-gray-100 dark:border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-end justify-between gap-3.5">
           <div>
             <div className="text-[10px] uppercase tracking-wider font-bold text-[#9CA3AF]">
               {t.hotelCard.perNight}
             </div>
-            <div className="flex items-baseline gap-1.5">
+            <div className="flex items-baseline gap-1.5 flex-wrap">
               <span className="text-xl sm:text-2xl font-bold text-[#111827] dark:text-white">
                 {CurrencyService.format(hotel.minPriceRub, currency, lang)}
               </span>
@@ -278,7 +278,7 @@ export const HotelCard: React.FC<HotelCardProps> = ({
           <button
             id={`view-rooms-btn-${hotel.id}`}
             onClick={() => onSelect(hotel)}
-            className="min-h-[44px] w-full xs:w-auto sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-[#111827] hover:bg-black text-white dark:bg-[#E11D48] dark:hover:bg-[#BE123C] px-5 py-2.5 text-xs sm:text-sm font-bold shadow-xs transition active:scale-95 whitespace-nowrap"
+            className="min-h-[44px] w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-[#111827] hover:bg-black text-white dark:bg-[#E11D48] dark:hover:bg-[#BE123C] px-5 py-2.5 text-xs sm:text-sm font-bold shadow-xs transition active:scale-95 whitespace-nowrap"
           >
             <Eye className="w-4 h-4" />
             <span>{t.hotelCard.viewDetails}</span>

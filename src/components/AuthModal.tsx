@@ -262,15 +262,19 @@ export function AuthModal({ isOpen, onClose, lang, onAuthSuccess }: AuthModalPro
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+    <div 
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+    >
       <div 
+        onClick={(e) => e.stopPropagation()}
         className="relative w-full max-w-lg bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden flex flex-col max-h-[90vh]"
         dir={isAr ? 'rtl' : 'ltr'}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
           <div>
-            <h2 className="text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               {isAr ? 'بوابة الدخول والمصادقة الموحدة' : 'Unified Auth & Security Portal'}
             </h2>
@@ -280,19 +284,19 @@ export function AuthModal({ isOpen, onClose, lang, onAuthSuccess }: AuthModalPro
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition active:scale-95"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tab Selection */}
-        <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-neutral-100/60 dark:bg-neutral-900 p-1.5 gap-1 text-xs font-semibold overflow-x-auto">
+        <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-neutral-100/60 dark:bg-neutral-900 p-1.5 gap-1 text-xs font-semibold overflow-x-auto no-scrollbar shrink-0">
           <button
             onClick={() => { setActiveTab('password'); setErrorMsg(null); }}
-            className={`flex-1 min-w-[70px] py-2 px-3 rounded-lg text-center transition ${
+            className={`flex-1 min-w-[75px] min-h-[44px] py-2 px-3 rounded-lg text-center transition flex items-center justify-center ${
               activeTab === 'password'
-                ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm'
+                ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm font-bold'
                 : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
             }`}
           >
@@ -300,9 +304,9 @@ export function AuthModal({ isOpen, onClose, lang, onAuthSuccess }: AuthModalPro
           </button>
           <button
             onClick={() => { setActiveTab('otp'); setErrorMsg(null); }}
-            className={`flex-1 min-w-[70px] py-2 px-3 rounded-lg text-center transition ${
+            className={`flex-1 min-w-[75px] min-h-[44px] py-2 px-3 rounded-lg text-center transition flex items-center justify-center ${
               activeTab === 'otp'
-                ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm'
+                ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm font-bold'
                 : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
             }`}
           >
@@ -310,9 +314,9 @@ export function AuthModal({ isOpen, onClose, lang, onAuthSuccess }: AuthModalPro
           </button>
           <button
             onClick={() => { setActiveTab('register'); setErrorMsg(null); }}
-            className={`flex-1 min-w-[70px] py-2 px-3 rounded-lg text-center transition ${
+            className={`flex-1 min-w-[75px] min-h-[44px] py-2 px-3 rounded-lg text-center transition flex items-center justify-center ${
               activeTab === 'register'
-                ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm'
+                ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm font-bold'
                 : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
             }`}
           >
