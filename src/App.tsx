@@ -12,6 +12,7 @@ import { Language, translations } from './lib/i18n';
 import { Hotel, HotelRoom, RoomRate, SearchFilters, SupportedCurrency, Booking, UserProfile, User, UserRole } from './types';
 import { SEED_HOTELS } from './server/seedData';
 import { HotelCard } from './components/HotelCard';
+import { PWAInstallButton } from './components/PWAInstallButton';
 import { Sparkles, Building, ArrowLeft, ArrowRight, ShieldCheck, Compass, Loader2, Building2, Briefcase, Bookmark } from 'lucide-react';
 
 // Production Performance Code Splitting (React.lazy + Suspense for Lighthouse Score >= 90)
@@ -1244,6 +1245,9 @@ export default function App() {
           </button>
         </div>
       </nav>
+
+      {/* Non-intrusive PWA Mobile Install Banner */}
+      <PWAInstallButton lang={lang} variant="banner" />
     </div>
   );
 }

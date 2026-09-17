@@ -438,6 +438,45 @@ app.get('/robots.txt', (req: Request, res: Response) => {
 });
 
 // ==========================================
+// 8.5. PWA MANIFEST & SERVICE WORKER ENGINE
+// ==========================================
+app.get(['/manifest.webmanifest', '/manifest.json'], (_req: Request, res: Response) => {
+  const manifestPath = path.join(process.cwd(), 'public', 'manifest.webmanifest');
+  if (fs.existsSync(manifestPath)) {
+    res.setHeader('Content-Type', 'application/manifest+json; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.sendFile(manifestPath);
+  } else {
+    res.status(404).json({ error: 'Manifest not found' });
+  }
+});
+
+app.get('/sw.js', (_req: Request, res: Response) => {
+  const swPath = path.join(process.cwd(), 'public', 'sw.js');
+  if (fs.existsSync(swPath)) {
+    res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+    res.setHeader('Service-Worker-Allowed', '/');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.sendFile(swPath);
+  } else {
+    res.status(404).send('Service worker not found');
+  }
+});
+
+// Explicit routes for PWA icons, shortcuts and screenshots
+app.use('/icons', express.static(path.join(process.cwd(), 'public', 'icons'), { maxAge: '30d' }));
+app.use('/screenshots', express.static(path.join(process.cwd(), 'public', 'screenshots'), { maxAge: '30d' }));
+app.get(['/apple-touch-icon.png', '/apple-touch-icon-precomposed.png'], (_req: Request, res: Response) => {
+  res.sendFile(path.join(process.cwd(), 'public', 'apple-touch-icon.png'));
+});
+app.get('/favicon.ico', (_req: Request, res: Response) => {
+  res.sendFile(path.join(process.cwd(), 'public', 'favicon.ico'));
+});
+
+// ==========================================
 // 9. VITE MIDDLEWARE & PRODUCTION SSR ENGINE
 // ==========================================
 async function startServer() {

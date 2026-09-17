@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json.schemastore.org/web-manifest.json",
+  "id": "/",
+  "name": "RussiaBooking",
+  "short_name": "RussiaBooking",
+  "description": "منصة متكاملة لاكتشاف وحجز الفنادق والإقامة في روسيا بسهولة وأمان.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#C8102E",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": [
+    "travel",
+    "booking"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/home-mobile.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "الصفحة الرئيسية وحجز الفنادق"
+    },
+    {
+      "src": "/screenshots/search-mobile.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "نتائج البحث والفلاتر الفندقية"
+    },
+    {
+      "src": "/screenshots/hotel-mobile.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "تفاصيل الغرف والحجز المباشر"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "البحث عن الفنادق",
+      "short_name": "البحث",
+      "description": "ابحث عن أفضل الفنادق في روسيا",
+      "url": "/?view=home",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "حجوزاتي",
+      "short_name": "الحجوزات",
+      "description": "استعراض قسائم وإيصالات الحجز الفندقي",
+      "url": "/?view=bookings",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "الفنادق المفضلة",
+      "short_name": "المفضلة",
+      "description": "الفنادق المحفوظة لرحلتك القادمة",
+      "url": "/?view=favorites",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

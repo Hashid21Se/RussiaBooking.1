@@ -25,10 +25,12 @@ export const securityHeadersMiddleware = (req: Request, res: Response, next: Nex
   // Permissions Policy
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self)');
 
-  // Content Security Policy (CSP) allowing Google AI Studio iframe embedding
+  // Content Security Policy (CSP) allowing Google AI Studio iframe embedding and PWA workers
   const cspDirectives = [
     "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'",
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob:",
+    "worker-src 'self' blob:",
+    "manifest-src 'self'",
     "style-src 'self' 'unsafe-inline' https: fonts.googleapis.com",
     "font-src 'self' https: data: fonts.gstatic.com",
     "img-src 'self' data: blob: https: http:",

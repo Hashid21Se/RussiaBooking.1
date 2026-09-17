@@ -9,6 +9,7 @@ export function usePWAInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
     // Detect standalone mode (already installed)
@@ -22,6 +23,10 @@ export function usePWAInstall() {
     const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
     setIsIOS(isIOSDevice);
 
+    // Check if user previously dismissed
+    const dismissed = localStorage.getItem('russiabooking_pwa_dismissed') === 'true';
+    setIsDismissed(dismissed);
+
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -30,6 +35,7 @@ export function usePWAInstall() {
     const handleAppInstalled = () => {
       setIsInstalled(true);
       setDeferredPrompt(null);
+      localStorage.removeItem('russiabooking_pwa_dismissed');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -41,7 +47,7 @@ export function usePWAInstall() {
     };
   }, []);
 
-  const install = async () => {
+  const install = async (): Promise<boolean> => {
     if (!deferredPrompt) return false;
     await deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
@@ -53,10 +59,18 @@ export function usePWAInstall() {
     return false;
   };
 
+  const dismiss = () => {
+    setIsDismissed(true);
+    localStorage.setItem('russiabooking_pwa_dismissed', 'true');
+  };
+
   return {
     isInstallable: !!deferredPrompt,
+    canPrompt: !!deferredPrompt && !isDismissed,
     isInstalled,
     isIOS,
+    isDismissed,
     install,
+    dismiss,
   };
 }
